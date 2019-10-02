@@ -37,18 +37,25 @@ def _csharp_resgen_impl(ctx):
             use_default_shell_env = True,
         )
 
+    res_outs = ctx.actions.declare_file("obj/Debug/net452/%s.dll" % (ctx.label.name))
     ctx.actions.run(
         inputs = resx + [csproj_output],
         # tools = [bat],
-        outputs = [resx_output],
-        executable = "cmd.exe",
-        arguments = ["/C", bat.path.replace("/", "\\")],
-        mnemonic = "CopyFile",
-        progress_message = "Copying files",
-        use_default_shell_env = True,
+        outputs = [res_outs],
+        executable = "C:/Users/jbeverly/Repositories/bazel/diff/dotnet-sdk-3.0.100-win-x64/dotnet.exe",
+        arguments = ["build", csproj_output.path.replace("/", "\\")],
+        mnemonic = "BuildResXProject",
+        progress_message = "Compiling resx files",
+        env = {
+            "HOME": "C:\\Users\\jbeverly\\",
+            "HOMEPATH": "C:\\Users\\jbeverly\\",
+            "DOTNET_CLI_HOME": "C:\\Users\\jbeverly\\bazel\\dotnet",
+        },
     )
-    files = depset(direct = resx + [csproj_output])
-    runfiles = ctx.runfiles(files = resx)
+    files = depset(direct = [res_outs])
+    runfiles = ctx.runfiles(files = [res_outs])
+    # files = depset(direct = resx + [csproj_output])
+    # runfiles = ctx.runfiles(files = resx)
     return [DefaultInfo(files = files, runfiles = runfiles)]
 
 csharp_resgen = rule(
