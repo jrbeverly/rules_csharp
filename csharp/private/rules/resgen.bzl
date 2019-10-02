@@ -39,8 +39,13 @@ def _csharp_resgen_impl(ctx):
 
 
     out_resources = []
-    for src in ctx.files.srcs:  
+    for src in ctx.files.srcs:
         out_r1 = ctx.actions.declare_file("obj/Debug/net452/%s.%s.resources" % (ctx.attr.name, src.basename[:-(len(src.extension)+1)]))
+        if (len(src.basename.split(".")) > 2):
+            splits = src.basename.split(".")
+            culture = splits[1]
+            out_r2 = ctx.actions.declare_file("obj/Debug/net452/%s/%s.resources.dll" % (culture, ctx.attr.name))
+            out_resources.append(out_r2)
         out_resources.append(out_r1)
     
     ctx.actions.run(
