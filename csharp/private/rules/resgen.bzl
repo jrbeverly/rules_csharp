@@ -14,7 +14,7 @@ def _csharp_resgen_impl(ctx):
 
     resx = []
     for src in ctx.files.srcs:
-        resx_output = ctx.actions.declare_file("{}.resx".format(src.basename))
+        resx_output = ctx.actions.declare_file("{}".format(src.basename))
         bat = ctx.actions.declare_file("%s-%s-cmd.bat" % (ctx.label.name, src.basename))
         resx.append(resx_output)
         ctx.actions.write(
@@ -37,11 +37,16 @@ def _csharp_resgen_impl(ctx):
             use_default_shell_env = True,
         )
 
-    res_outs = ctx.actions.declare_file("obj/Debug/net452/%s.dll" % (ctx.label.name))
+
+    out_resources = []
+    for src in ctx.files.srcs:  
+        out_r1 = ctx.actions.declare_file("obj/Debug/net452/%s.%s.resources" % (ctx.attr.name, src.basename[:-(len(src.extension)+1)]))
+        out_resources.append(out_r1)
+    
     ctx.actions.run(
         inputs = resx + [csproj_output],
         # tools = [bat],
-        outputs = [res_outs],
+        outputs = out_resources,
         executable = "C:/Users/jbeverly/Repositories/bazel/diff/dotnet-sdk-3.0.100-win-x64/dotnet.exe",
         arguments = ["build", csproj_output.path.replace("/", "\\")],
         mnemonic = "BuildResXProject",
@@ -71,8 +76,8 @@ def _csharp_resgen_impl(ctx):
             "HOMEPATH": "\\Users\\jbeverly",
         },
     )
-    files = depset(direct = [res_outs])
-    runfiles = ctx.runfiles(files = [res_outs])
+    files = depset(direct = out_resources)
+    runfiles = ctx.runfiles(files = out_resources)
     # files = depset(direct = resx + [csproj_output])
     # runfiles = ctx.runfiles(files = resx)
     return [DefaultInfo(files = files, runfiles = runfiles)]

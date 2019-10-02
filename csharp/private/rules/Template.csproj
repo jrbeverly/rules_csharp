@@ -1,5 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFrameworks>{FRAMEWORK}</TargetFrameworks>
+        <EnableDefaultEmbeddedResourceItems>False</EnableDefaultEmbeddedResourceItems>
     </PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Strings.fr-CA.resx" />
+        <EmbeddedResource Include="Strings.resx" />
+    </ItemGroup>
 </Project>
