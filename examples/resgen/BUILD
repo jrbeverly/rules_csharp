@@ -8,7 +8,7 @@ load(
 csharp_binary(
     name = "hello",
     srcs = ["hello.cs", "Strings.Designer.cs"],
-    resources = ["Hello.Strings.resources"],
+    resources = [":hello.strings"],
     target_frameworks = ["net472"],
     deps = ["@net//:System.Linq"],
 )

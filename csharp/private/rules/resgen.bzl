@@ -2,13 +2,14 @@
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/Template.csproj"
 
 def _csharp_resgen_impl(ctx):
-    csproj_output = ctx.actions.declare_file("{}.csproj".format(ctx.attr.name))
+    proj_name = "hello"
+    csproj_output = ctx.actions.declare_file("{}.csproj".format(proj_name))
 
     ctx.actions.expand_template(
         template = ctx.file._template,
         output = csproj_output,
         substitutions = {
-            "{FRAMEWORK}": "net452",
+            "{FRAMEWORK}": "net472",
         },
     )
 
@@ -40,12 +41,12 @@ def _csharp_resgen_impl(ctx):
 
     out_resources = []
     for src in ctx.files.srcs:
-        out_r1 = ctx.actions.declare_file("obj/Debug/net452/%s.%s.resources" % (ctx.attr.name, src.basename[:-(len(src.extension)+1)]))
+        out_r1 = ctx.actions.declare_file("obj/Debug/net472/%s.%s.resources" % (proj_name, src.basename[:-(len(src.extension)+1)]))
         if (len(src.basename.split(".")) > 2):
             splits = src.basename.split(".")
             culture = splits[1]
-            out_r2 = ctx.actions.declare_file("obj/Debug/net452/%s/%s.resources.dll" % (culture, ctx.attr.name))
-            out_resources.append(out_r2)
+            # out_r2 = ctx.actions.declare_file("obj/Debug/net452/%s/%s.resources.dll" % (culture, proj_name))
+            # out_resources.append(out_r2)
         out_resources.append(out_r1)
     
     ctx.actions.run(

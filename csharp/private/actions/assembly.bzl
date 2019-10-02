@@ -122,6 +122,7 @@ def AssemblyAction(
     args.add_all([cs.path for cs in srcs])
 
     # resources
+    print(resources)
     args.add_all(resources, map_each = _format_resource_arg)
 
     # defines
