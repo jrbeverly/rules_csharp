@@ -1,22 +1,17 @@
 using System;
-using System.Linq;
-using static Lib.Stuff;
-
+using System.Threading;
+using System.Globalization;
 namespace Hello {
   public static class Program {
     public static void Main() {
-      Console.WriteLine( "Hello, world!" );
-      Console.WriteLine( "Some numbers for you:" );
-      Console.Write( "\t" );
+      Console.WriteLine("The current culture is {0}.", CultureInfo.CurrentUICulture.Name);
+      Console.WriteLine("Message: {0}", Strings.Hello);
 
-      // silly code
-      Console.WriteLine(
-          Fibonacci( 0, 1 )
-            .WhereNot( IsEven )
-            .Take( 10 )
-            .Select( x => x.ToString() )
-            .Aggregate( (x, y) => x + ", " + y )
-      );
+      // Change the current culture to fr-CA.
+      Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("fr-CA");
+
+      Console.WriteLine("The current culture is {0}.", CultureInfo.CurrentUICulture.Name);
+      Console.WriteLine("Message: {0}", Strings.Hello);
     }
   }
 }

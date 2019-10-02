@@ -1,22 +1,14 @@
 load(
     "@d2l_rules_csharp//csharp:defs.bzl",
     "csharp_binary",
-    "csharp_library",
     "csharp_resgen"
 )
 
 # bazel run //examples:hello
 csharp_binary(
     name = "hello",
-    srcs = ["hello.cs"],
-    target_frameworks = ["net472"],
-    deps = [":lib"],
-)
-
-# bazel test //examples:lib_test
-csharp_library(
-    name = "lib",
-    srcs = ["lib.cs"],
+    srcs = ["hello.cs", "Strings.Designer.cs"],
+    resources = ["Hello.Strings.resources"],
     target_frameworks = ["net472"],
     deps = ["@net//:System.Linq"],
 )
