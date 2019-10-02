@@ -1,18 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFrameworks>{FRAMEWORK}</TargetFrameworks>
-        <AssemblyName>{ASSEMBLY}</AssemblyName>
-        <PackageId>{ASSEMBLY}</PackageId>
-        <RootNamespace>{ASSEMBLY}</RootNamespace>
     </PropertyGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Update="{RESOURCE}">
-            <Generator>ResXFileCodeGenerator</Generator>
-            <StronglyTypedFileName>$(IntermediateOutputPath)\{CLASSNAME}.Designer.cs</StronglyTypedFileName>
-            <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
-            <StronglyTypedNamespace>{ASSEMBLY}</StronglyTypedNamespace>
-            <StronglyTypedClassName>{CLASSNAME}</StronglyTypedClassName>
-        </EmbeddedResource>
-    </ItemGroup>
 </Project>

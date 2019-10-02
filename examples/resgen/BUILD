@@ -14,7 +14,6 @@ csharp_binary(
 )
 
 csharp_resgen(
-    name = "lib.strings",
-    src = "Strings.resx"
-    # target_frameworks = ["net472"],
+    name = "hello.strings",
+    srcs = ["Strings.resx", "Strings.fr-CA.resx"]
 )
