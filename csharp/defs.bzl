@@ -9,7 +9,7 @@ load(
 )
 load(
     "//csharp/private:rules/resgen.bzl",
-    _csharp_resgen = "csharp_resgen",
+    _csharp_resx = "csharp_resx",
 )
 load(
     "//csharp/private:rules/library.bzl",
@@ -36,7 +36,7 @@ load(
 
 csharp_binary = _csharp_binary
 csharp_library = _csharp_library
-csharp_resgen = _csharp_resgen
+csharp_resx = _csharp_resx
 csharp_nunit_test = _csharp_nunit_test
 csharp_register_toolchains = _csharp_register_toolchains
 csharp_repositories = _csharp_repositories

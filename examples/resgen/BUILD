@@ -1,7 +1,7 @@
 load(
     "@d2l_rules_csharp//csharp:defs.bzl",
     "csharp_binary",
-    "csharp_resgen"
+    "csharp_resx"
 )
 
 # bazel run //examples:hello
@@ -13,7 +13,7 @@ csharp_binary(
     deps = ["@net//:System.Linq"],
 )
 
-csharp_resgen(
+csharp_resx(
     name = "hello.strings",
     srcs = ["Strings.resx", "Strings.fr-CA.resx"]
 )

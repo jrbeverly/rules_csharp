@@ -1,7 +1,7 @@
 # Label of the template file to use.
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/Template.csproj"
 
-def _csharp_resgen_impl(ctx):
+def _csharp_resx_impl(ctx):
     proj_name = "hello"
     csproj_output = ctx.actions.declare_file("{}.csproj".format(proj_name))
 
@@ -88,8 +88,8 @@ def _csharp_resgen_impl(ctx):
     # runfiles = ctx.runfiles(files = resx)
     return [DefaultInfo(files = files, runfiles = runfiles)]
 
-csharp_resgen = rule(
-    implementation = _csharp_resgen_impl,
+csharp_resx = rule(
+    implementation = _csharp_resx_impl,
     attrs = {
         "srcs": attr.label_list(mandatory = True, allow_files = True),
         "_template": attr.label(
