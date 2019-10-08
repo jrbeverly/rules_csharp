@@ -10,6 +10,7 @@ def _csharp_resx_impl(ctx):
         output = csproj_output,
         substitutions = {
             "{FRAMEWORK}": "net472",
+            "{PATH}": ctx.files.srcs[0].short_path,
         },
     )
 
