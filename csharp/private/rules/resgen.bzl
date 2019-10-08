@@ -10,7 +10,7 @@ def _csharp_resx_impl(ctx):
         output = csproj_output,
         substitutions = {
             "{FRAMEWORK}": "net472",
-            "{PATH}": ctx.files.srcs[0].short_path,
+            "{PATH}": ctx.files.srcs[0].basename,
         },
     )
 
@@ -60,27 +60,9 @@ def _csharp_resx_impl(ctx):
         progress_message = "Compiling resx files",
         env = {
             "DOTNET_CLI_HOME": "C:\\Users\\jbeverly\\bazel\\dotnet",
-            "COMMONPROGRAMFILES": "C:\\Program Files\\Common Files",
-            "LOCALAPPDATA": "C:\\Users\\jbeverly\\AppData\\Local",
-            "SYSTEMDRIVE": "C:",
-            "USERPROFILE": "C:\\Users\\jbeverly",
-            "PWD": "/c/Users/jbeverly/Repositories/bazel/diff/dotnet-sdk-3.0.100-win-x64",
             "HOME": "/c/Users/jbeverly",
-            "TMP": "/tmp",
-            "PROCESSOR_REVISION": "3c03",
-            "FPS_BROWSER_USER_PROFILE_STRING": "Default",
-            "ProgramW6432": "C:\\Program Files",
-            "COMSPEC": "C:\\WINDOWS\\system32\\cmd.exe",
             "APPDATA": "C:\\Users\\jbeverly\\AppData\\Roaming",
-            "WINDIR": "C:\\WINDOWS",
-            "ProgramData": "C:\\ProgramData",
             "PROGRAMFILES": "C:\\Program Files",
-            "ProgramFiles(x86)": "C:\\Program Files (x86)",
-            "ReferenceAssemblyRoot": "C:\\Program Files (x86)\\Reference Assemblies\\Microsoft\\Framework",
-            "ALLUSERSPROFILE": "C:\\ProgramData",
-            "TEMP": "/tmp",
-            "HOMEDRIVE": "C:",
-            "HOMEPATH": "\\Users\\jbeverly",
         },
     )
     files = depset(direct = out_resources)
