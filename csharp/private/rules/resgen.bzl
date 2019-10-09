@@ -1,19 +1,29 @@
 # Label of the template file to use.
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/Template.csproj"
+_TEMPLATE_EMBEDDED_RESOURCE = "        <EmbeddedResource Include=\"%s\" />"
+
+def _csproj_embedded_resource(resx_files):
+    result = ""
+    for src in resx_files:
+        result += _TEMPLATE_EMBEDDED_RESOURCE % (src.basename)
+    return result
 
 def _csharp_resx_impl(ctx):
     proj_name = ctx.file.csproj.basename[:-(len(ctx.file.csproj.extension)+1)]
-    csproj_output = ctx.actions.declare_file(ctx.file.csproj.basename)
 
+    ## CSProj generation
+    csproj_output = ctx.actions.declare_file(ctx.file.csproj.basename)
+    embedded_resources = _csproj_embedded_resource(ctx.files.srcs)
     ctx.actions.expand_template(
         template = ctx.file._template,
         output = csproj_output,
         substitutions = {
             "{FRAMEWORK}": ctx.attr.target_frameworks[0],
-            "{PATH}": ctx.files.srcs[0].basename,
+            "{RESOURCES}": embedded_resources,
         },
     )
 
+    ## Copying the resx files
     resx = []
     for src in ctx.files.srcs:
         resx_output = ctx.actions.declare_file("{}".format(src.basename))
@@ -40,6 +50,7 @@ def _csharp_resx_impl(ctx):
         )
 
 
+    # Capturing the outputs from this.
     out_resources = []
     for src in ctx.files.srcs:
         out_r1 = ctx.actions.declare_file("obj/Debug/net472/%s.%s.resources" % (proj_name, src.basename[:-(len(src.extension)+1)]))
@@ -66,15 +77,30 @@ def _csharp_resx_impl(ctx):
     )
     files = depset(direct = out_resources)
     runfiles = ctx.runfiles(files = out_resources)
-    # files = depset(direct = resx + [csproj_output])
-    # runfiles = ctx.runfiles(files = resx)
     return [DefaultInfo(files = files, runfiles = runfiles)]
 
+"""Converts files to common language runtime binary files that can be embedded.
+The Resource File Generator (Resgen.exe) converts text (.txt or .restext) files and 
+XML-based resource format (.resx) files to common language runtime binary (.resources) 
+files that can be embedded in a runtime binary executable or satellite assembly.
+
+Args:
+    name: Name of the rule.
+    srcs: The files to convert to .resources files.
+    csproj: The name of the source project.
+    target_frameworks: A list of target framework monikers to build.
+"""
 csharp_resx = rule(
     implementation = _csharp_resx_impl,
     attrs = {
-        "srcs": attr.label_list(mandatory = True, allow_files = True),
-        "csproj": attr.label(mandatory = True, allow_single_file = True),
+        "srcs": attr.label_list(
+            mandatory = True, 
+            allow_files = True
+        ),
+        "csproj": attr.label(
+            mandatory = True, 
+            allow_single_file = True
+        ),
         "target_frameworks": attr.string_list(
             doc = "A list of target framework monikers to build" +
                   "See https://docs.microsoft.com/en-us/dotnet/standard/frameworks",
