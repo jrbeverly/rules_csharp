@@ -21,7 +21,7 @@ def _format_additionalfile_arg(additionalfile):
     return "/additionalfile:" + additionalfile.path
 
 def _format_resource_arg(resource):
-    return "/resource:" + resource.path
+    return "/resource:%s,%s" % (resource.path, "Hello.Strings.resources")
 
 def _format_define(symbol):
     return "/d:" + symbol

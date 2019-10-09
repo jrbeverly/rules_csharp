@@ -9,10 +9,7 @@ def _csproj_embedded_resource(resx_files):
     return result
 
 def _csharp_resx_impl(ctx):
-    proj_name = ctx.file.csproj.basename[:-(len(ctx.file.csproj.extension)+1)]
-
-    ## CSProj generation
-    csproj_output = ctx.actions.declare_file(ctx.file.csproj.basename)
+    csproj_output = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
     embedded_resources = _csproj_embedded_resource(ctx.files.srcs)
     ctx.actions.expand_template(
         template = ctx.file._template,
@@ -53,12 +50,13 @@ def _csharp_resx_impl(ctx):
     # Capturing the outputs from this.
     out_resources = []
     for src in ctx.files.srcs:
-        out_r1 = ctx.actions.declare_file("obj/Debug/net472/%s.%s.resources" % (proj_name, src.basename[:-(len(src.extension)+1)]))
+        out_r1 = ctx.actions.declare_file("obj/Debug/net472/%s.%s.resources" % (ctx.attr.name, src.basename[:-(len(src.extension)+1)]))
         if (len(src.basename.split(".")) > 2):
             splits = src.basename.split(".")
             culture = splits[1]
-            # out_r2 = ctx.actions.declare_file("obj/Debug/net452/%s/%s.resources.dll" % (culture, proj_name))
+            # out_r2 = ctx.actions.declare_file("obj/Debug/net452/%s/%s.resources.dll" % (culture, ctx.attr.name))
             # out_resources.append(out_r2)
+        
         out_resources.append(out_r1)
     
     ctx.actions.run(
@@ -96,10 +94,6 @@ csharp_resx = rule(
         "srcs": attr.label_list(
             mandatory = True, 
             allow_files = True
-        ),
-        "csproj": attr.label(
-            mandatory = True, 
-            allow_single_file = True
         ),
         "target_frameworks": attr.string_list(
             doc = "A list of target framework monikers to build" +
