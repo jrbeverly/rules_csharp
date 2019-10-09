@@ -2,14 +2,14 @@
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/Template.csproj"
 
 def _csharp_resx_impl(ctx):
-    proj_name = "hello"
-    csproj_output = ctx.actions.declare_file("{}.csproj".format(proj_name))
+    proj_name = ctx.file.csproj.basename[:-(len(ctx.file.csproj.extension)+1)]
+    csproj_output = ctx.actions.declare_file(ctx.file.csproj.basename)
 
     ctx.actions.expand_template(
         template = ctx.file._template,
         output = csproj_output,
         substitutions = {
-            "{FRAMEWORK}": "net472",
+            "{FRAMEWORK}": ctx.attr.target_frameworks[0],
             "{PATH}": ctx.files.srcs[0].basename,
         },
     )
@@ -52,7 +52,6 @@ def _csharp_resx_impl(ctx):
     
     ctx.actions.run(
         inputs = resx + [csproj_output],
-        # tools = [bat],
         outputs = out_resources,
         executable = "C:/Users/jbeverly/Repositories/bazel/diff/dotnet-sdk-3.0.100-win-x64/dotnet.exe",
         arguments = ["build", csproj_output.path.replace("/", "\\")],
@@ -75,6 +74,12 @@ csharp_resx = rule(
     implementation = _csharp_resx_impl,
     attrs = {
         "srcs": attr.label_list(mandatory = True, allow_files = True),
+        "csproj": attr.label(mandatory = True, allow_single_file = True),
+        "target_frameworks": attr.string_list(
+            doc = "A list of target framework monikers to build" +
+                  "See https://docs.microsoft.com/en-us/dotnet/standard/frameworks",
+            allow_empty = False,
+        ),
         "_template": attr.label(
             default = Label(_TEMPLATE),
             allow_single_file = True,
