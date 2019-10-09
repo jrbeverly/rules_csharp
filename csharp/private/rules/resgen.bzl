@@ -77,17 +77,6 @@ def _csharp_resx_impl(ctx):
     runfiles = ctx.runfiles(files = out_resources)
     return [DefaultInfo(files = files, runfiles = runfiles)]
 
-"""Converts files to common language runtime binary files that can be embedded.
-The Resource File Generator (Resgen.exe) converts text (.txt or .restext) files and 
-XML-based resource format (.resx) files to common language runtime binary (.resources) 
-files that can be embedded in a runtime binary executable or satellite assembly.
-
-Args:
-    name: Name of the rule.
-    srcs: The files to convert to .resources files.
-    csproj: The name of the source project.
-    target_frameworks: A list of target framework monikers to build.
-"""
 csharp_resx = rule(
     implementation = _csharp_resx_impl,
     attrs = {
