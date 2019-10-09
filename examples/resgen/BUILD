@@ -15,6 +15,6 @@ csharp_binary(
 
 csharp_resx(
     name = "hello.resources",
-    srcs = ["Strings.resx"],
-    target_frameworks = ["net472"],
+    src = "Strings.resx",
+    identifier = "Hello.Strings.resource"
 )

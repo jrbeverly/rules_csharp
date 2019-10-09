@@ -1,64 +1,56 @@
 # Label of the template file to use.
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/Template.csproj"
-_TEMPLATE_EMBEDDED_RESOURCE = "        <EmbeddedResource Include=\"%s\" />"
-
-def _csproj_embedded_resource(resx_files):
-    result = ""
-    for src in resx_files:
-        result += _TEMPLATE_EMBEDDED_RESOURCE % (src.basename)
-    return result
 
 def _csharp_resx_impl(ctx):
-    csproj_output = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
-    embedded_resources = _csproj_embedded_resource(ctx.files.srcs)
+    csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
     ctx.actions.expand_template(
-        template = ctx.file._template,
-        output = csproj_output,
+        template = ctx.file._csproj_template,
+        output = csproj,
         substitutions = {
-            "{FRAMEWORK}": ctx.attr.target_frameworks[0],
-            "{RESOURCES}": embedded_resources,
+            "{FRAMEWORK}": ctx.attr.target_framework,
+            "{RESOURCE}": ctx.file.src.basename,
         },
     )
 
     ## Copying the resx files
-    resx = []
-    for src in ctx.files.srcs:
-        resx_output = ctx.actions.declare_file("{}".format(src.basename))
-        bat = ctx.actions.declare_file("%s-%s-cmd.bat" % (ctx.label.name, src.basename))
-        resx.append(resx_output)
-        ctx.actions.write(
-            output = bat,
-            content = "@copy /Y \"%s\" \"%s\" >NUL" % (
-                src.path.replace("/", "\\"),
-                resx_output.path.replace("/", "\\"),
-            ),
-            is_executable = True,
-        )
+    ## TODO: Replace this with a `copy_file` cross platform
+    copied_source = ctx.actions.declare_file("{}".format(ctx.file.src.basename))
+    copy_bat = ctx.actions.declare_file("%s-%s-cmd.bat" % (ctx.label.name, ctx.file.src.basename))
+    ctx.actions.write(
+        output = copy_bat,
+        content = "@copy /Y \"%s\" \"%s\" >NUL" % (
+            ctx.file.src.path.replace("/", "\\"),
+            copied_source.path.replace("/", "\\"),
+        ),
+        is_executable = True,
+    )
 
-        ctx.actions.run(
-            inputs = [src],
-            tools = [bat],
-            outputs = [resx_output],
-            executable = "cmd.exe",
-            arguments = ["/C", bat.path.replace("/", "\\")],
-            mnemonic = "CopyFile",
-            progress_message = "Copying files",
-            use_default_shell_env = True,
-        )
+    ctx.actions.run(
+        inputs = [ctx.file.src],
+        tools = [copy_bat],
+        outputs = [copied_source],
+        executable = "cmd.exe",
+        arguments = ["/C", copy_bat.path.replace("/", "\\")],
+        mnemonic = "CSharpResXCopyFile",
+        progress_message = "Copying files",
+        use_default_shell_env = True,
+    )
 
-
-    # Capturing the outputs from this.
-    out_resources = []
-    for src in ctx.files.srcs:
-        out_r1 = ctx.actions.declare_file("obj/Debug/net472/%s.%s.resources" % (ctx.attr.name, src.basename[:-(len(src.extension)+1)]))       
-        out_resources.append(out_r1)
+    resource = ctx.actions.declare_file(
+        "obj/%s/%s/%s.%s.resources" % 
+        (
+            "Debug",
+            ctx.attr.target_framework,
+            ctx.attr.name, 
+            ctx.file.src.basename[:-(len(ctx.file.src.extension)+1)],
+        ))       
     
     ctx.actions.run(
-        inputs = resx + [csproj_output],
-        outputs = out_resources,
+        inputs = [copied_source, csproj],
+        outputs = [resource],
         executable = ctx.attr._runner,
-        arguments = ["build", csproj_output.path.replace("/", "\\")],
-        mnemonic = "BuildResXProject",
+        arguments = ["build", csproj.path.replace("/", "\\")],
+        mnemonic = "CSharpResXCompile",
         progress_message = "Compiling resx files",
         env = {
             "DOTNET_CLI_HOME": "C:\\",
@@ -67,28 +59,29 @@ def _csharp_resx_impl(ctx):
             "PROGRAMFILES": "C:\\",
         },
     )
-    files = depset(direct = out_resources)
-    runfiles = ctx.runfiles(files = out_resources)
+
+    files = depset(direct = [resource])
+    runfiles = ctx.runfiles(files = [resource])
     return [DefaultInfo(files = files, runfiles = runfiles)]
 
 csharp_resx = rule(
     implementation = _csharp_resx_impl,
     attrs = {
-        "srcs": attr.label_list(
+        "src": attr.label(
             mandatory = True, 
-            allow_files = True
+            allow_single_file = True
         ),
-        "target_frameworks": attr.string_list(
-            doc = "A list of target framework monikers to build" +
-                  "See https://docs.microsoft.com/en-us/dotnet/standard/frameworks",
-            allow_empty = False,
-        ),
-        "_template": attr.label(
+        "identifier": attr.string(),
+        "out": attr.string(),
+        "_csproj_template": attr.label(
             default = Label(_TEMPLATE),
             allow_single_file = True,
         ),
         "_runner": attr.string(
             default = "dotnet.exe"
+        ),
+        "target_framework": attr.string(
+            default = "net472"
         )
     },
 )

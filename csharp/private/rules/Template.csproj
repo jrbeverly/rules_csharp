@@ -5,6 +5,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-{RESOURCES}
+        <EmbeddedResource Include="{RESOURCE}" />
     </ItemGroup>
 </Project>
