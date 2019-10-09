@@ -50,27 +50,21 @@ def _csharp_resx_impl(ctx):
     # Capturing the outputs from this.
     out_resources = []
     for src in ctx.files.srcs:
-        out_r1 = ctx.actions.declare_file("obj/Debug/net472/%s.%s.resources" % (ctx.attr.name, src.basename[:-(len(src.extension)+1)]))
-        if (len(src.basename.split(".")) > 2):
-            splits = src.basename.split(".")
-            culture = splits[1]
-            # out_r2 = ctx.actions.declare_file("obj/Debug/net452/%s/%s.resources.dll" % (culture, ctx.attr.name))
-            # out_resources.append(out_r2)
-        
+        out_r1 = ctx.actions.declare_file("obj/Debug/net472/%s.%s.resources" % (ctx.attr.name, src.basename[:-(len(src.extension)+1)]))       
         out_resources.append(out_r1)
     
     ctx.actions.run(
         inputs = resx + [csproj_output],
         outputs = out_resources,
-        executable = "C:/Users/jbeverly/Repositories/bazel/diff/dotnet-sdk-3.0.100-win-x64/dotnet.exe",
+        executable = ctx.attr._runner,
         arguments = ["build", csproj_output.path.replace("/", "\\")],
         mnemonic = "BuildResXProject",
         progress_message = "Compiling resx files",
         env = {
-            "DOTNET_CLI_HOME": "C:\\Users\\jbeverly\\bazel\\dotnet",
-            "HOME": "/c/Users/jbeverly",
-            "APPDATA": "C:\\Users\\jbeverly\\AppData\\Roaming",
-            "PROGRAMFILES": "C:\\Program Files",
+            "DOTNET_CLI_HOME": "C:\\",
+            "HOME": "/c/",
+            "APPDATA": "C:\\",
+            "PROGRAMFILES": "C:\\",
         },
     )
     files = depset(direct = out_resources)
@@ -93,5 +87,8 @@ csharp_resx = rule(
             default = Label(_TEMPLATE),
             allow_single_file = True,
         ),
+        "_runner": attr.string(
+            default = "dotnet.exe"
+        )
     },
 )
