@@ -1,6 +1,3 @@
-# Label of the template file to use.
-_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/Template.csproj"
-
 # When we are running in the execution directory
 def _relative_to_ref(path):
   # Path to execroot (where shell is running) \execroot\__main__
@@ -11,39 +8,23 @@ def _relative_to_ref(path):
   # correctly link to the resx file locations
   return "../../../../%s" % (path)
 
-def _csharp_resx_impl(ctx):
-    csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
-    ctx.actions.expand_template(
-        template = ctx.file._csproj_template,
-        output = csproj,
-        substitutions = {
-            "{FRAMEWORK}": ctx.attr.target_framework,
-            "{RESOURCE}": _relative_to_ref(ctx.file.src.path),
-        },
-    )
+def _format_compile_arg(file):
+    return "/compile %s" % (file.path)
 
+def _csharp_resx_impl(ctx):
     resource = ctx.actions.declare_file(
-        "obj/%s/%s/%s.%s.resources" % 
+        "%s.resources" % 
         (
-            "Debug",
-            ctx.attr.target_framework,
-            ctx.attr.name, 
             ctx.file.src.basename[:-(len(ctx.file.src.extension)+1)],
-        ))       
-    
+        ))
+
     ctx.actions.run(
-        inputs = [ctx.file.src, csproj],
+        inputs = [ctx.file.src],
         outputs = [resource],
-        executable = ctx.attr._runner,
-        arguments = ["build", csproj.path.replace("/", "\\")],
+        executable = ctx.attr._custom_resx_tool,
+        arguments = [ctx.file.src.path, resource.path],
         mnemonic = "CSharpResXCompile",
         progress_message = "Compiling resx files",
-        env = {
-            "DOTNET_CLI_HOME": "C:\\",
-            "HOME": "/c/",
-            "APPDATA": "C:\\",
-            "PROGRAMFILES": "C:\\",
-        },
     )
 
     files = depset(direct = [resource])
@@ -68,6 +49,9 @@ csharp_resx = rule(
         ),
         "target_framework": attr.string(
             default = "net472"
-        )
+        ),
+        "_custom_resx_tool": attr.string(
+            default = "resgen.exe"
+        ),
     },
 )
