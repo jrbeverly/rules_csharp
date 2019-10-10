@@ -1,6 +1,16 @@
 # Label of the template file to use.
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/Template.csproj"
 
+# When we are running in the execution directory
+def _relative_to_ref(path):
+  # Path to execroot (where shell is running) \execroot\__main__
+  # Fixed path for the item itself \bazel-out\x64_windows-fastbuild\bin\resgen\
+  #
+  # In the execroot/__main__ dir, a symlink to the `workspace` directory is
+  # available. As long as the fixed path remains constant, this should
+  # correctly link to the resx file locations
+  return "../../../../%s" % (path)
+
 def _csharp_resx_impl(ctx):
     csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
     ctx.actions.expand_template(
@@ -8,32 +18,8 @@ def _csharp_resx_impl(ctx):
         output = csproj,
         substitutions = {
             "{FRAMEWORK}": ctx.attr.target_framework,
-            "{RESOURCE}": ctx.file.src.basename,
+            "{RESOURCE}": _relative_to_ref(ctx.file.src.path),
         },
-    )
-
-    ## Copying the resx files
-    ## TODO: Replace this with a `copy_file` cross platform
-    copied_source = ctx.actions.declare_file("{}".format(ctx.file.src.basename))
-    copy_bat = ctx.actions.declare_file("%s-%s-cmd.bat" % (ctx.label.name, ctx.file.src.basename))
-    ctx.actions.write(
-        output = copy_bat,
-        content = "@copy /Y \"%s\" \"%s\" >NUL" % (
-            ctx.file.src.path.replace("/", "\\"),
-            copied_source.path.replace("/", "\\"),
-        ),
-        is_executable = True,
-    )
-
-    ctx.actions.run(
-        inputs = [ctx.file.src],
-        tools = [copy_bat],
-        outputs = [copied_source],
-        executable = "cmd.exe",
-        arguments = ["/C", copy_bat.path.replace("/", "\\")],
-        mnemonic = "CSharpResXCopyFile",
-        progress_message = "Copying files",
-        use_default_shell_env = True,
     )
 
     resource = ctx.actions.declare_file(
@@ -46,7 +32,7 @@ def _csharp_resx_impl(ctx):
         ))       
     
     ctx.actions.run(
-        inputs = [copied_source, csproj],
+        inputs = [ctx.file.src, csproj],
         outputs = [resource],
         executable = ctx.attr._runner,
         arguments = ["build", csproj.path.replace("/", "\\")],
