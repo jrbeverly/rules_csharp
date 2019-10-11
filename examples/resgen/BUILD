@@ -16,5 +16,6 @@ csharp_binary(
 csharp_resx(
     name = "hello.resources",
     src = "Strings.resx",
-    identifier = "Hello.Strings.resource"
+    identifier = "Hello.Strings.resource",
+    custom_resx_tool = "C:/Users/jbeverly/Repositories/bazel/rules_csharp/examples/resgen/resgen.exe"
 )

@@ -21,7 +21,7 @@ def _csharp_resx_impl(ctx):
     ctx.actions.run(
         inputs = [ctx.file.src],
         outputs = [resource],
-        executable = ctx.attr._custom_resx_tool,
+        executable = ctx.attr.custom_resx_tool,
         arguments = [ctx.file.src.path, resource.path],
         mnemonic = "CSharpResXCompile",
         progress_message = "Compiling resx files",
@@ -39,18 +39,7 @@ csharp_resx = rule(
             allow_single_file = True
         ),
         "identifier": attr.string(),
-        "out": attr.string(),
-        "_csproj_template": attr.label(
-            default = Label(_TEMPLATE),
-            allow_single_file = True,
-        ),
-        "_runner": attr.string(
-            default = "dotnet.exe"
-        ),
-        "target_framework": attr.string(
-            default = "net472"
-        ),
-        "_custom_resx_tool": attr.string(
+        "custom_resx_tool": attr.string(
             default = "resgen.exe"
         ),
     },
