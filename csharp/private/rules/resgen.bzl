@@ -2,10 +2,20 @@
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/Template.csproj"
 _TEMPLATE_EMBEDDED_RESOURCE = "        <EmbeddedResource Include=\"%s\" />"
 
+# When we are running in the execution directory
+def _relative_to_ref(path):
+  # Path to execroot (where shell is running) \execroot\__main__
+  # Fixed path for the item itself \bazel-out\x64_windows-fastbuild\bin\resgen\
+  #
+  # In the execroot/__main__ dir, a symlink to the `workspace` directory is
+  # available. As long as the fixed path remains constant, this should
+  # correctly link to the resx file locations
+  return "../../../../%s" % (path)
+
 def _csproj_embedded_resource(resx_files):
     result = ""
     for src in resx_files:
-        result += _TEMPLATE_EMBEDDED_RESOURCE % (src.basename)
+        result += _TEMPLATE_EMBEDDED_RESOURCE % (_relative_to_ref(src.path))
     return result
 
 def _csharp_resx_impl(ctx):
@@ -20,47 +30,14 @@ def _csharp_resx_impl(ctx):
         },
     )
 
-    ## Copying the resx files
-    resx = []
-    for src in ctx.files.srcs:
-        resx_output = ctx.actions.declare_file("{}".format(src.basename))
-        bat = ctx.actions.declare_file("%s-%s-cmd.bat" % (ctx.label.name, src.basename))
-        resx.append(resx_output)
-        ctx.actions.write(
-            output = bat,
-            content = "@copy /Y \"%s\" \"%s\" >NUL" % (
-                src.path.replace("/", "\\"),
-                resx_output.path.replace("/", "\\"),
-            ),
-            is_executable = True,
-        )
-
-        ctx.actions.run(
-            inputs = [src],
-            tools = [bat],
-            outputs = [resx_output],
-            executable = "cmd.exe",
-            arguments = ["/C", bat.path.replace("/", "\\")],
-            mnemonic = "CopyFile",
-            progress_message = "Copying files",
-            use_default_shell_env = True,
-        )
-
-
     # Capturing the outputs from this.
     out_resources = []
     for src in ctx.files.srcs:
         out_r1 = ctx.actions.declare_file("obj/Debug/net472/%s.%s.resources" % (ctx.attr.name, src.basename[:-(len(src.extension)+1)]))
-        if (len(src.basename.split(".")) > 2):
-            splits = src.basename.split(".")
-            culture = splits[1]
-            # out_r2 = ctx.actions.declare_file("obj/Debug/net452/%s/%s.resources.dll" % (culture, ctx.attr.name))
-            # out_resources.append(out_r2)
-        
         out_resources.append(out_r1)
     
     ctx.actions.run(
-        inputs = resx + [csproj_output],
+        inputs = ctx.files.srcs + [csproj_output],
         outputs = out_resources,
         executable = "C:/Users/jbeverly/Repositories/bazel/diff/dotnet-sdk-3.0.100-win-x64/dotnet.exe",
         arguments = ["build", csproj_output.path.replace("/", "\\")],
