@@ -1,74 +1,70 @@
 # Label of the template file to use.
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/Template.csproj"
-_TEMPLATE_EMBEDDED_RESOURCE = "        <EmbeddedResource Include=\"%s\" />"
 
-# When we are running in the execution directory
+# When we write the csproj to disk, it will be placed within the rules
+# output directory (e.g. \bazel-out\x64_windows-fastbuild\bin\resgen\) within
+# the output base of bazel (path\to\output\random\execroot\__main__\). 
+#
+# The compilation will look for the resgen files relative to the csproj file. The
+# symlink for the workspace is located at the workspace bin (which is 4 dirs up)
+# 
+# As long as the bazel-out path to rule remains constant, we can jump to the workspace
+# bin output. From there, we use the symlink to reference files in the workspace.
 def _relative_to_ref(path):
-  # Path to execroot (where shell is running) \execroot\__main__
-  # Fixed path for the item itself \bazel-out\x64_windows-fastbuild\bin\resgen\
-  #
-  # In the execroot/__main__ dir, a symlink to the `workspace` directory is
-  # available. As long as the fixed path remains constant, this should
-  # correctly link to the resx file locations
   return "../../../../%s" % (path)
 
-def _csproj_embedded_resource(resx_files):
-    result = ""
-    for src in resx_files:
-        result += _TEMPLATE_EMBEDDED_RESOURCE % (_relative_to_ref(src.path))
-    return result
-
 def _csharp_resx_impl(ctx):
-    csproj_output = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
-    embedded_resources = _csproj_embedded_resource(ctx.files.srcs)
+    framework = ctx.attr.target_frameworks[0]
+    csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
     ctx.actions.expand_template(
-        template = ctx.file._template,
-        output = csproj_output,
+        template = ctx.file._csproj_template,
+        output = csproj,
         substitutions = {
-            "{FRAMEWORK}": ctx.attr.target_frameworks[0],
-            "{RESOURCES}": embedded_resources,
+            "{FRAMEWORK}": framework,
+            "{RESOURCE}": _relative_to_ref(ctx.file.src.path),
         },
     )
 
     # Capturing the outputs from this.
-    out_resources = []
-    for src in ctx.files.srcs:
-        out_r1 = ctx.actions.declare_file("obj/Debug/net472/%s.%s.resources" % (ctx.attr.name, src.basename[:-(len(src.extension)+1)]))
-        out_resources.append(out_r1)
+    resource = ctx.actions.declare_file("obj/Debug/%s/%s.%s.resources" % (framework, ctx.attr.name, ctx.file.src.basename[:-(len(ctx.file.src.extension)+1)]))
     
     ctx.actions.run(
-        inputs = ctx.files.srcs + [csproj_output],
-        outputs = out_resources,
-        executable = "C:/Users/jbeverly/Repositories/bazel/diff/dotnet-sdk-3.0.100-win-x64/dotnet.exe",
-        arguments = ["build", csproj_output.path.replace("/", "\\")],
+        inputs = [ctx.file.src, csproj],
+        outputs = [resource],
+        executable = ctx.attr._dotnet_runner,
+        arguments = ["build", csproj.path.replace("/", "\\")],
         mnemonic = "BuildResXProject",
         progress_message = "Compiling resx files",
         env = {
-            "DOTNET_CLI_HOME": "C:\\Users\\jbeverly\\bazel\\dotnet",
-            "HOME": "/c/Users/jbeverly",
-            "APPDATA": "C:\\Users\\jbeverly\\AppData\\Roaming",
-            "PROGRAMFILES": "C:\\Program Files",
+            "DOTNET_CLI_HOME": "C:\\",
+            "HOME": "/c/",
+            "APPDATA": "C:\\",
+            "PROGRAMFILES": "C:\\",
         },
     )
-    files = depset(direct = out_resources)
-    runfiles = ctx.runfiles(files = out_resources)
+    files = depset(direct = [resource])
+    runfiles = ctx.runfiles(files = [resource])
     return [DefaultInfo(files = files, runfiles = runfiles)]
 
 csharp_resx = rule(
     implementation = _csharp_resx_impl,
     attrs = {
-        "srcs": attr.label_list(
+        "src": attr.label(
             mandatory = True, 
-            allow_files = True
+            allow_single_file = True
         ),
+        "identifier": attr.string(),
         "target_frameworks": attr.string_list(
             doc = "A list of target framework monikers to build" +
                   "See https://docs.microsoft.com/en-us/dotnet/standard/frameworks",
             allow_empty = False,
         ),
-        "_template": attr.label(
+        "_csproj_template": attr.label(
             default = Label(_TEMPLATE),
             allow_single_file = True,
+        ),
+        "_dotnet_runner": attr.string(
+            default = "dotnet.exe",
         ),
     },
 )
