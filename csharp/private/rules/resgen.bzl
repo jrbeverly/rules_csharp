@@ -1,5 +1,5 @@
 # Label of the template file to use.
-_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/Template.csproj"
+_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
 
 # When we write the csproj to disk, it will be placed within the rules
 # output directory (e.g. \bazel-out\x64_windows-fastbuild\bin\resgen\) within
@@ -14,25 +14,30 @@ def _relative_to_ref(path):
   return "../../../../%s" % (path)
 
 def _csharp_resx_impl(ctx):
-    framework = ctx.attr.target_frameworks[0]
+    if not ctx.attr.out:
+        out = "%s.%s.resources" % (ctx.attr.name, ctx.file.src.basename[:-(len(ctx.file.src.extension)+1)])
+    else:
+        out = ctx.attr.out
     csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
     ctx.actions.expand_template(
         template = ctx.file._csproj_template,
         output = csproj,
         substitutions = {
-            "{FRAMEWORK}": framework,
+            "{FRAMEWORK}": ctx.attr.target_framework,
             "{RESOURCE}": _relative_to_ref(ctx.file.src.path),
+            "{LOGICAL_NAME}": out,
         },
     )
 
     # Capturing the outputs from this.
-    resource = ctx.actions.declare_file("obj/Debug/%s/%s.%s.resources" % (framework, ctx.attr.name, ctx.file.src.basename[:-(len(ctx.file.src.extension)+1)]))
+    resource = ctx.actions.declare_file("obj/Debug/%s/%s" % (ctx.attr.target_framework, out))
     
+    toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
     ctx.actions.run(
         inputs = [ctx.file.src, csproj],
         outputs = [resource],
-        executable = ctx.attr._dotnet_runner,
-        arguments = ["build", csproj.path.replace("/", "\\")],
+        executable = toolchain.runtime.path,
+        arguments = ["build", csproj.path.replace("/", "\\"), "--verbosity", "detailed"],
         mnemonic = "BuildResXProject",
         progress_message = "Compiling resx files",
         env = {
@@ -50,26 +55,25 @@ csharp_resx = rule(
     implementation = _csharp_resx_impl,
     attrs = {
         "src": attr.label(
-            doc = "The resx file."
+            doc = "The resx file.",
             mandatory = True, 
             allow_single_file = True
         ),
         "identifier": attr.string(
-            doc = "The identifier of the resource."
-            mandatory = True, 
+            doc = "The identifier of the resource.",
         ),
-        "target_frameworks": attr.string_list(
-            doc = "A list of target framework monikers to build.",
-            allow_empty = False,
+        "out": attr.string(
+            doc = "The identifier of the resource.",
+        ),
+        "target_framework": attr.string(
+            doc = "A target framework moniker to build.",
+            default = "net472",
         ),
         "_csproj_template": attr.label(
-            doc = "The csproj template used in compiling a resx file."
+            doc = "The csproj template used in compiling a resx file.",
             default = Label(_TEMPLATE),
             allow_single_file = True,
         ),
-        "_dotnet_runner": attr.string(
-            doc = "Allows customizing the dotnet instance."
-            default = "dotnet",
-        ),
     },
+    toolchains = ["@d2l_rules_csharp//csharp/private:toolchain_type"],
 )

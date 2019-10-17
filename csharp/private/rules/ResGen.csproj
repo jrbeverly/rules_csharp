@@ -5,6 +5,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="{RESOURCE}" />
+        <EmbeddedResource Include="{RESOURCE}">
+            <LogicalName>{LOGICAL_NAME}</LogicalName>
+        </EmbeddedResource>
     </ItemGroup>
 </Project>

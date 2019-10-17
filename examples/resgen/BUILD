@@ -8,14 +8,13 @@ load(
 csharp_binary(
     name = "hello",
     srcs = ["hello.cs", "Strings.Designer.cs"],
-    resources = [":hello.resources"],
+    resources = [":hello.strings"],
     target_frameworks = ["net472"],
     deps = ["@net//:System.Linq"],
 )
 
 csharp_resx(
-    name = "hello.resources",
+    name = "hello.strings",
     src = "Strings.resx",
-    # identifier
-    target_frameworks = ["net472"],
+    target_framework = "net472",
 )
