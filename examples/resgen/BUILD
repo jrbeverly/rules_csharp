@@ -16,5 +16,5 @@ csharp_binary(
 csharp_resx(
     name = "hello.strings",
     src = "Strings.resx",
-    target_framework = "net472",
+    target_framework = "netcoreapp3.0",
 )

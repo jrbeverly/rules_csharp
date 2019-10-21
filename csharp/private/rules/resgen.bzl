@@ -1,5 +1,6 @@
 # Label of the template file to use.
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
+_RUNTIME_CONFIG = "@d2l_rules_csharp//csharp/private:rules/bazel.runtimeconfig.json"
 
 # When we write the csproj to disk, it will be placed within the rules
 # output directory (e.g. \bazel-out\x64_windows-fastbuild\bin\resgen\) within
@@ -32,19 +33,20 @@ def _csharp_resx_impl(ctx):
     # Capturing the outputs from this.
     resource = ctx.actions.declare_file("obj/Debug/%s/%s" % (ctx.attr.target_framework, out))
     
+    print(ctx.file._runtime_config.path)
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
     ctx.actions.run(
         inputs = [ctx.file.src, csproj],
         outputs = [resource],
-        executable = toolchain.runtime.path,
-        arguments = ["build", csproj.path.replace("/", "\\"), "--verbosity", "detailed"],
+        executable = toolchain.runtime,
+        arguments = ["build", csproj.path.replace("/", "\\")],
         mnemonic = "BuildResXProject",
         progress_message = "Compiling resx files",
         env = {
-            "DOTNET_CLI_HOME": "C:\\",
-            "HOME": "/c/",
-            "APPDATA": "C:\\",
-            "PROGRAMFILES": "C:\\",
+            "DOTNET_CLI_HOME": "/root/",
+            "HOME": "/root/",
+            "APPDATA": "/root/",
+            "PROGRAMFILES": "/root/",
         },
     )
     files = depset(direct = [resource])
@@ -72,6 +74,11 @@ csharp_resx = rule(
         "_csproj_template": attr.label(
             doc = "The csproj template used in compiling a resx file.",
             default = Label(_TEMPLATE),
+            allow_single_file = True,
+        ),
+        "_runtime_config": attr.label(
+            doc = "The csproj template used in compiling a resx file.",
+            default = Label(_RUNTIME_CONFIG),
             allow_single_file = True,
         ),
     },
