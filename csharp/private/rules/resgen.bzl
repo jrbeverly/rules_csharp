@@ -1,6 +1,5 @@
 # Label of the template file to use.
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
-_RUNTIME_CONFIG = "@d2l_rules_csharp//csharp/private:rules/bazel.runtimeconfig.json"
 
 # When we write the csproj to disk, it will be placed within the rules
 # output directory (e.g. \bazel-out\x64_windows-fastbuild\bin\resgen\) within
@@ -19,6 +18,7 @@ def _csharp_resx_impl(ctx):
         out = "%s.%s.resources" % (ctx.attr.name, ctx.file.src.basename[:-(len(ctx.file.src.extension)+1)])
     else:
         out = ctx.attr.out
+    
     csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
     ctx.actions.expand_template(
         template = ctx.file._csproj_template,
@@ -33,13 +33,12 @@ def _csharp_resx_impl(ctx):
     # Capturing the outputs from this.
     resource = ctx.actions.declare_file("obj/Debug/%s/%s" % (ctx.attr.target_framework, out))
     
-    print(ctx.file._runtime_config.path)
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
     ctx.actions.run(
         inputs = [ctx.file.src, csproj],
         outputs = [resource],
         executable = toolchain.runtime,
-        arguments = ["build", csproj.path.replace("/", "\\")],
+        arguments = ["build", csproj.path],
         mnemonic = "BuildResXProject",
         progress_message = "Compiling resx files",
         env = {
@@ -69,16 +68,11 @@ csharp_resx = rule(
         ),
         "target_framework": attr.string(
             doc = "A target framework moniker to build.",
-            default = "net472",
+            default = "netcoreapp3.0",
         ),
         "_csproj_template": attr.label(
             doc = "The csproj template used in compiling a resx file.",
             default = Label(_TEMPLATE),
-            allow_single_file = True,
-        ),
-        "_runtime_config": attr.label(
-            doc = "The csproj template used in compiling a resx file.",
-            default = Label(_RUNTIME_CONFIG),
             allow_single_file = True,
         ),
     },
