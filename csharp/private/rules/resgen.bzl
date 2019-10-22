@@ -17,7 +17,7 @@ def _csharp_resx_impl(ctx):
     if not ctx.attr.out:
         out = "%s.%s.resources" % (ctx.attr.name, ctx.file.src.basename[:-(len(ctx.file.src.extension)+1)])
     else:
-        out = ctx.attr.out
+        out = "%s.resources" % (ctx.attr.out)
     
     csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
     ctx.actions.expand_template(
@@ -26,7 +26,7 @@ def _csharp_resx_impl(ctx):
         substitutions = {
             "{FRAMEWORK}": ctx.attr.target_framework,
             "{RESOURCE}": _relative_to_ref(ctx.file.src.path),
-            "{LOGICAL_NAME}": out,
+            "{LOGICAL_NAME}": ctx.attr.out,
         },
     )
 
@@ -39,6 +39,7 @@ def _csharp_resx_impl(ctx):
         outputs = [resource],
         executable = toolchain.runtime,
         arguments = ["build", csproj.path],
+        # arguments = ["build", csproj.path, "--verbosity", "d"],
         mnemonic = "BuildResXProject",
         progress_message = "Compiling resx files",
         env = {

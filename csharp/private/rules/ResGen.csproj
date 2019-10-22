@@ -6,7 +6,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="{RESOURCE}">
-            <LogicalName>{LOGICAL_NAME}</LogicalName>
+            <ManifestResourceName>{LOGICAL_NAME}</ManifestResourceName>
         </EmbeddedResource>
     </ItemGroup>
 </Project>
