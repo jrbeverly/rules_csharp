@@ -209,3 +209,8 @@ DefaultLangVersion = {
 # A convenience used in attributes that need to specify that they accept any
 # kind of C# assembly. This is an array of single-element arrays.
 AnyTargetFramework = [[a] for a in CSharpAssembly.values()]
+
+CSharpResource = provider()
+"""
+A represenatation of the dotnet compiled resource (.resources).
+"""

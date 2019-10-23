@@ -1,16 +1,18 @@
-# Label of the template file to use.
+load(
+    "@d2l_rules_csharp//csharp/private:providers.bzl",
+    "CSharpResource",
+)
+
+# Label of the csproj template for ResX compilation
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
 
-# When we write the csproj to disk, it will be placed within the rules
-# output directory (e.g. \bazel-out\x64_windows-fastbuild\bin\resgen\) within
-# the output base of bazel (path\to\output\random\execroot\__main__\). 
+# When compiling the csproj, it will look for the embedded resources related to
+# the path of the csproj on disk. Since the csproj is written by the bazel, it will
+# be in the rule bin directory. If we want to get the relative path to the
+# ResX files, we need to get to a junction/symlink for the source. 
 #
-# The compilation will look for the resgen files relative to the csproj file. The
-# symlink for the workspace is located at the workspace bin (which is 4 dirs up)
-# 
-# As long as the bazel-out path to rule remains constant, we can jump to the workspace
-# bin output. From there, we use the symlink to reference files in the workspace.
-def _relative_to_ref(path):
+# The junction/symlink that we are using is 4 directories up (\bazel-out\<sandbox>\bin\<name>\)
+def _bazel_to_relative_path(path):
   return "../../../../%s" % (path)
 
 def _csharp_resx_impl(ctx):
@@ -20,28 +22,31 @@ def _csharp_resx_impl(ctx):
         out = "%s.resources" % (ctx.attr.out)
     
     csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
+    resource = ctx.actions.declare_file("obj/Debug/%s/%s" % (ctx.attr.target_framework, out))
+
     ctx.actions.expand_template(
         template = ctx.file._csproj_template,
         output = csproj,
         substitutions = {
-            "{FRAMEWORK}": ctx.attr.target_framework,
-            "{RESOURCE}": _relative_to_ref(ctx.file.src.path),
-            "{LOGICAL_NAME}": ctx.attr.out,
+            "{TargetFramework}": ctx.attr.target_framework,
+            "{Resx}": _bazel_to_relative_path(ctx.file.src.path),
+            "{ManifestResourceName}": ctx.attr.out,
         },
     )
 
-    # Capturing the outputs from this.
-    resource = ctx.actions.declare_file("obj/Debug/%s/%s" % (ctx.attr.target_framework, out))
-    
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
+    
+    args = ctx.actions.args()
+    args.add("build")
+    args.add(csproj.path)
+    
     ctx.actions.run(
         inputs = [ctx.file.src, csproj],
         outputs = [resource],
         executable = toolchain.runtime,
-        arguments = ["build", csproj.path],
-        # arguments = ["build", csproj.path, "--verbosity", "d"],
-        mnemonic = "BuildResXProject",
-        progress_message = "Compiling resx files",
+        arguments = [args],
+        mnemonic = "CompileResX",
+        progress_message = "Compiling resx file to binary",
         env = {
             "DOTNET_CLI_HOME": "/root/",
             "HOME": "/root/",
@@ -49,9 +54,18 @@ def _csharp_resx_impl(ctx):
             "PROGRAMFILES": "/root/",
         },
     )
+
     files = depset(direct = [resource])
-    runfiles = ctx.runfiles(files = [resource])
-    return [DefaultInfo(files = files, runfiles = runfiles)]
+    return [
+        CSharpResource(
+            name = ctx.attr.name,
+            result = resource,
+            identifier = resource.basename if not ctx.attr.identifier else ctx.attr.identifier,
+        ),
+        DefaultInfo(
+            files = files,
+        ),
+    ]
 
 csharp_resx = rule(
     implementation = _csharp_resx_impl,
