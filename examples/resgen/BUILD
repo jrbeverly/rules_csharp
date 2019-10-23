@@ -4,7 +4,6 @@ load(
     "csharp_resx"
 )
 
-# bazel run //examples:hello
 csharp_binary(
     name = "hello",
     srcs = ["hello.cs", "Strings.Designer.cs"],
