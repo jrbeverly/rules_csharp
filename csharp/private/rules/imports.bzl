@@ -20,15 +20,18 @@ def _import_library(ctx):
     if ctx.file.refdll != None:
         files.append(ctx.file.refdll)
 
+    files += ctx.files.native_dlls
+
     tfm = ctx.attr.target_framework
 
-    (refs, runfiles) = collect_transitive_info(ctx.attr.deps, tfm)
+    (refs, runfiles, native_dlls) = collect_transitive_info(ctx.attr.deps, tfm)
 
     providers = {
         tfm: CSharpAssembly[tfm](
             out = ctx.file.dll,
             refout = ctx.file.refdll,
             pdb = ctx.file.pdb,
+            native_dlls = depset(direct = ctx.files.native_dlls, transitive = [native_dlls]),
             deps = ctx.attr.deps,
             transitive_refs = refs,
             transitive_runfiles = runfiles,
@@ -60,6 +63,10 @@ import_library = rule(
             doc = "A metadata-only DLL, suitable for compiling against but not running",
             allow_single_file = [".dll"],
         ),
+        "native_dlls": attr.label_list(
+            doc = "A list of native dlls, which while unreferenced, are required for running and compiling",
+            allow_files = [".dll"],
+        ),
         "deps": attr.label_list(
             doc = "other DLLs that this DLL depends on.",
             providers = AnyTargetFramework,
@@ -82,8 +89,12 @@ def _import_multiframework_library_impl(ctx):
         "netstandard1.6": ctx.attr.netstandard1_6,
         "netstandard2.0": ctx.attr.netstandard2_0,
         "netstandard2.1": ctx.attr.netstandard2_1,
+        "net11": ctx.attr.net11,
         "net20": ctx.attr.net20,
+        "net30": ctx.attr.net30,
+        "net35": ctx.attr.net35,
         "net40": ctx.attr.net40,
+        "net403": ctx.attr.net403,
         "net45": ctx.attr.net45,
         "net451": ctx.attr.net451,
         "net452": ctx.attr.net452,

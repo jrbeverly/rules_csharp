@@ -3,14 +3,6 @@ load(":macros/nuget.bzl", "nuget_package")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def csharp_repositories():
-    nuget_package(
-        name = "csharp-build-tools",
-        package = "Microsoft.Net.Compilers.Toolset",
-        version = "3.1.1",
-        sha256 = "078e88a3f347e1428868cfd091634489f385379069e85a6707184ac07da9d481",
-        build_file = "@d2l_rules_csharp//csharp/private:build-tools.BUILD",
-    )
-
     _net_workspace()
 
     create_net_workspace()
@@ -30,23 +22,22 @@ def csharp_repositories():
         sha256 = "62b67516a08951a20b12b02e5d20b5045edbb687c3aabe9170286ec5bb9000a1",
     )
 
-    # We need the .NET Core runtime for whatever OS where executing our build
-    # on so that we can run the .NET core build of the compiler (from
-    # @csharp-build-tools).
+    # We need the .NET Core runtime, sdk and compiler for our current OS,
+    # so that we can run the .NET core build of the compiler.
 
-    _download_runtime(
+    _download_dotnet(
         os = "windows",
         url = "https://download.visualstudio.microsoft.com/download/pr/a24f4f34-ada1-433a-a437-5bc85fc2576a/7e886d06729949c15c96fe7e70faa8ae/dotnet-sdk-3.0.100-win-x64.zip",
         hash = "faf8a92a523558e1659a6f9750c86610fe8430430f58099ccc659b83e3eee1bf",
     )
 
-    _download_runtime(
+    _download_dotnet(
         os = "linux",
         url = "https://download.visualstudio.microsoft.com/download/pr/886b4a4c-30af-454b-8bec-81c72b7b4e1f/d1a0c8de9abb36d8535363ede4a15de6/dotnet-sdk-3.0.100-linux-x64.tar.gz",
         hash = "12098fe29d5c857fd6093b1fd63eda9f91b92798e3748fcedc0e0727f1ac01c2",
     )
 
-    _download_runtime(
+    _download_dotnet(
         os = "osx",
         url = "https://download.visualstudio.microsoft.com/download/pr/b9251194-4118-41cb-ae05-6763fb002e5d/1d398b4e97069fa4968628080b617587/dotnet-sdk-3.0.100-osx-x64.tar.gz",
         hash = "f0f8af049e0ecbeea9c9c37c16679d6fc2cd4c165510b00e3fad3cd8d0fe0160",
@@ -59,9 +50,9 @@ def csharp_register_toolchains():
         "@d2l_rules_csharp//csharp/private:csharp_osx_toolchain",
     )
 
-def _download_runtime(os, url, hash):
+def _download_dotnet(os, url, hash):
     http_archive(
-        name = "netcore-runtime-%s" % os,
+        name = "netcore-sdk-%s" % os,
         urls = [url],
         sha256 = hash,
         build_file = "@d2l_rules_csharp//csharp/private:runtime.BUILD",

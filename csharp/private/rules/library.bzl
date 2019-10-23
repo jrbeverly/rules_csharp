@@ -34,7 +34,8 @@ def _library_impl(ctx):
 
     result = providers.values()
     result.append(DefaultInfo(
-        files = depset([result[0].out, result[0].refout, result[0].pdb]),
+        files = depset([result[0].out]),
+        default_runfiles = ctx.runfiles(files = [result[0].pdb]),
     ))
 
     return result
@@ -85,7 +86,7 @@ csharp_library = rule(
         ),
         "_stdrefs": attr.label(
             doc = "The standard set of assemblies to reference.",
-            default = "@net//:mscorlib", # TODO: change to @net//:StandardReferences once it exists
+            default = "@net//:StandardReferences",
         ),
         "deps": attr.label_list(
             doc = "Other C# libraries, binaries, or imported DLLs",

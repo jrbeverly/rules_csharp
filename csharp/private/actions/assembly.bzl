@@ -109,7 +109,7 @@ def AssemblyAction(
     args.add("/pdb:" + pdb.path)
 
     # assembly references
-    (refs, runfiles) = collect_transitive_info(deps, target_framework)
+    (refs, runfiles, native_dlls) = collect_transitive_info(deps, target_framework)
     args.add_all(refs, map_each = _format_ref_arg)
 
     # analyzers
@@ -155,15 +155,17 @@ def AssemblyAction(
     args.set_param_file_format("multiline")
     args.use_param_file("@%s")
 
+    direct_inputs = srcs + resources + analyzer_assemblies + additionalfiles + [toolchain.compiler]
+    direct_inputs += [keyfile] if keyfile else []
+
     # dotnet.exe csc.dll /noconfig <other csc args>
     # https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/command-line-building-with-csc-exe
     actions.run(
         mnemonic = "CSharpCompile",
         progress_message = "Compiling " + name,
         inputs = depset(
-            direct = srcs + resources + analyzer_assemblies + additionalfiles +
-                     [toolchain.compiler],
-            transitive = [refs],
+            direct = direct_inputs,
+            transitive = [refs] + [native_dlls],
         ),
         outputs = [out_file, refout, pdb],
         executable = toolchain.runtime,
@@ -181,6 +183,7 @@ def AssemblyAction(
         out = out_file,
         refout = refout,
         pdb = pdb,
+        native_dlls = native_dlls,
         deps = deps,
         transitive_refs = refs,
         transitive_runfiles = runfiles,

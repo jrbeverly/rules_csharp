@@ -13,6 +13,7 @@ def _make_csharp_provider(tfm):
             "out": "a dll (for libraries and tests) or an exe (for binaries).",
             "refout": "A reference-only DLL/exe. See docs/ReferenceAssemblies.md for more info.",
             "pdb": "debug symbols",
+            "native_dlls": "A list of native DLLs required to build and run this assembly",
             "deps": "the non-transitive dependencies for this assembly (used by import_multiframework_library).",
             "transitive_refs": "A list of other assemblies to reference when referencing this assembly in a compilation.",
             "transitive_runfiles": "Runfiles from the transitive dependencies.",
@@ -32,8 +33,12 @@ CSharpAssembly_netstandard15 = _make_csharp_provider("netstandard1.5")
 CSharpAssembly_netstandard16 = _make_csharp_provider("netstandard1.6")
 CSharpAssembly_netstandard20 = _make_csharp_provider("netstandard2.0")
 CSharpAssembly_netstandard21 = _make_csharp_provider("netstandard2.1")
+CSharpAssembly_net11 = _make_csharp_provider("net11")
 CSharpAssembly_net20 = _make_csharp_provider("net20")
+CSharpAssembly_net30 = _make_csharp_provider("net30")
+CSharpAssembly_net35 = _make_csharp_provider("net35")
 CSharpAssembly_net40 = _make_csharp_provider("net40")
+CSharpAssembly_net403 = _make_csharp_provider("net403")
 CSharpAssembly_net45 = _make_csharp_provider("net45")
 CSharpAssembly_net451 = _make_csharp_provider("net451")
 CSharpAssembly_net452 = _make_csharp_provider("net452")
@@ -63,8 +68,12 @@ CSharpAssembly = {
     "netstandard1.6": CSharpAssembly_netstandard16,
     "netstandard2.0": CSharpAssembly_netstandard20,
     "netstandard2.1": CSharpAssembly_netstandard21,
+    "net11": CSharpAssembly_net11,
     "net20": CSharpAssembly_net20,
+    "net30": CSharpAssembly_net30,
+    "net35": CSharpAssembly_net35,
     "net40": CSharpAssembly_net40,
+    "net403": CSharpAssembly_net403,
     "net45": CSharpAssembly_net45,
     "net451": CSharpAssembly_net451,
     "net452": CSharpAssembly_net452,
@@ -101,9 +110,13 @@ FrameworkCompatibility = {
     "netstandard2.1": ["netstandard2.0"],
 
     # .NET Framework
-    "net20": [],
-    "net40": ["net20"],
-    "net45": ["net40", "netstandard1.1"],
+    "net11": [],
+    "net20": ["net11"],
+    "net30": ["net20"],
+    "net35": ["net30"],
+    "net40": ["net35"],
+    "net403": ["net40"],
+    "net45": ["net403", "netstandard1.1"],
     "net451": ["net45", "netstandard1.2"],
     "net452": ["net451"],
     "net46": ["net452", "netstandard1.3"],
@@ -134,8 +147,12 @@ SubsystemVersion = {
     "netstandard1.6": None,
     "netstandard2.0": None,
     "netstandard2.1": None,
+    "net11": None,
     "net20": None,
+    "net30": None,
+    "net35": None,
     "net40": None,
+    "net403": None,
     "net45": "6.00",
     "net451": "6.00",
     "net452": "6.00",
@@ -165,8 +182,12 @@ DefaultLangVersion = {
     "netstandard1.6": "7.3",
     "netstandard2.0": "7.3",
     "netstandard2.1": "7.3",
+    "net11": "7.3",
     "net20": "7.3",
+    "net30": "7.3",
+    "net35": "7.3",
     "net40": "7.3",
+    "net403": "7.3",
     "net45": "7.3",
     "net451": "7.3",
     "net452": "7.3",
