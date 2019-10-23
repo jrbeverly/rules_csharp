@@ -125,7 +125,7 @@ def AssemblyAction(
     args.add_all([cs.path for cs in srcs])
 
     # resources
-    resource_files = [res[CSharpResource].result for res in resources]
+    resourcefiles = [res[CSharpResource].result for res in resources]
     args.add_all(resources, map_each = _format_resource_arg)
 
     # defines
@@ -159,7 +159,7 @@ def AssemblyAction(
     args.set_param_file_format("multiline")
     args.use_param_file("@%s")
 
-    direct_inputs = srcs + resource_files + analyzer_assemblies + additionalfiles + [toolchain.compiler]
+    direct_inputs = srcs + resourcefiles + analyzer_assemblies + additionalfiles + [toolchain.compiler]
     direct_inputs += [keyfile] if keyfile else []
 
     # dotnet.exe csc.dll /noconfig <other csc args>

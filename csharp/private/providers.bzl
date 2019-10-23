@@ -212,5 +212,5 @@ AnyTargetFramework = [[a] for a in CSharpAssembly.values()]
 
 CSharpResource = provider()
 """
-A represenatation of the dotnet compiled resource (.resources).
+Represents a common language runtime binary resource file (.resources).
 """

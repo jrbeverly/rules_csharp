@@ -71,22 +71,22 @@ csharp_resx = rule(
     implementation = _csharp_resx_impl,
     attrs = {
         "src": attr.label(
-            doc = "The resx file.",
+            doc = "The XML-based resource format (.resx) file.",
             mandatory = True, 
             allow_single_file = True
         ),
         "identifier": attr.string(
-            doc = "The identifier of the resource.",
+            doc = "The logical name for the resource; the name that is used to load the resource. The default is the name of the rule.",
         ),
         "out": attr.string(
-            doc = "The identifier of the resource.",
+            doc = "Specifies the name of the output (.resources) resource file. The extension is not necessary.",
         ),
         "target_framework": attr.string(
-            doc = "A target framework moniker to build.",
+            doc = "A target framework moniker used in building the resource file.",
             default = "netcoreapp3.0",
         ),
         "_csproj_template": attr.label(
-            doc = "The csproj template used in compiling a resx file.",
+            doc = "The csproj template used in compiling the resx file.",
             default = Label(_TEMPLATE),
             allow_single_file = True,
         ),
