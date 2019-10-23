@@ -17,12 +17,12 @@ def _bazel_to_relative_path(path):
 
 def _csharp_resx_impl(ctx):
     if not ctx.attr.out:
-        out = "%s.%s.resources" % (ctx.attr.name, ctx.file.src.basename[:-(len(ctx.file.src.extension)+1)])
+        resource_name = ctx.attr.name
     else:
-        out = "%s.resources" % (ctx.attr.out)
+        resource_name = ctx.attr.out
     
     csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
-    resource = ctx.actions.declare_file("obj/Debug/%s/%s" % (ctx.attr.target_framework, out))
+    resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
 
     ctx.actions.expand_template(
         template = ctx.file._csproj_template,
@@ -30,7 +30,7 @@ def _csharp_resx_impl(ctx):
         substitutions = {
             "{TargetFramework}": ctx.attr.target_framework,
             "{Resx}": _bazel_to_relative_path(ctx.file.src.path),
-            "{ManifestResourceName}": ctx.attr.out,
+            "{ManifestResourceName}": resource_name,
         },
     )
 
