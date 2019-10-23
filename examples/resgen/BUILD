@@ -16,5 +16,4 @@ csharp_binary(
 csharp_resx(
     name = "Hello.Strings",
     src = "Strings.resx",
-    # identifier = "Hello.Strings.resources",
 )
