@@ -1,5 +1,3 @@
-_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
-
 def _csharp_wrapper_impl(ctx):
     cc_file = ctx.actions.declare_file("%s.cc" % (ctx.attr.name))
 

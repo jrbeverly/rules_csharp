@@ -51,18 +51,11 @@ def csharp_register_toolchains():
     )
 
 def _download_dotnet(os, url, hash):
-    # wrapper_url = "https://gist.githubusercontent.com/jrbeverly/bd60032564347630623fb035ad3f6b17/raw/4acbe80acb5aecf1726bf2d0dfb77ddb98e1fb46/main.cc"
-    gist = "ddbc7f8c7923a942c9f61047b2d0cef02a010a99"
-    wrapper_url = "https://gist.githubusercontent.com/jrbeverly/bd60032564347630623fb035ad3f6b17/raw/%s/main.cc" % gist
     http_archive(
         name = "netcore-sdk-%s" % os,
         urls = [url],
         sha256 = hash,
         build_file = "@d2l_rules_csharp//csharp/private:runtime.BUILD",
-        patch_args = [_TEMPLATE],
-        patch_cmds_win = [
-            "Invoke-WebRequest -Uri %s -OutFile main.cc" % wrapper_url,
-        ]
     )
 
 def _net_workspace():
