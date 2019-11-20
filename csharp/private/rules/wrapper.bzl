@@ -4,7 +4,7 @@ def _csharp_wrapper_impl(ctx):
         template = ctx.file.src,
         output = cc_file,
         substitutions = {
-            "{DotnetExe}": ctx.file.target.short_path[3:] ,
+            "{DotnetExe}": ctx.file.target.short_path[3:],
         },
     )
 
