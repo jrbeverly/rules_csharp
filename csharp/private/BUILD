@@ -6,7 +6,7 @@ toolchain_type(name = "toolchain_type")
 
 configure_toolchain(
     "windows",
-    exe = "dotnet.exe",
+    exe = "dotnetw",
 )
 
 configure_toolchain("linux")

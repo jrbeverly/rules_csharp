@@ -1,0 +1,31 @@
+_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
+
+def _csharp_wrapper_impl(ctx):
+    cc_file = ctx.actions.declare_file("%s.cc" % (ctx.attr.name))
+
+    dotnet_exe = "%s/dotnet.exe" % ctx.file.src.dirname 
+    print(dotnet_exe)
+    ctx.actions.expand_template(
+        template = ctx.file.src,
+        output = cc_file,
+        substitutions = {
+            "{DotnetExe}": dotnet_exe,
+        },
+    )
+
+    files = depset(direct = [cc_file])
+    return [
+        DefaultInfo(
+            files = files,
+        ),
+    ]
+
+csharp_wrapper = rule(
+    implementation = _csharp_wrapper_impl,
+    attrs = {
+        "src": attr.label(
+            mandatory = True, 
+            allow_single_file = True
+        ),
+    },
+)

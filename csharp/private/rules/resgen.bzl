@@ -48,12 +48,6 @@ def _csharp_resx_impl(ctx):
         arguments = [args],
         mnemonic = "CompileResX",
         progress_message = "Compiling resx file to binary",
-        env = {
-            "DOTNET_CLI_HOME": "/root/",
-            "HOME": "/root/",
-            "APPDATA": "/root/",
-            "PROGRAMFILES": "/root/",
-        },
     )
 
     files = depset(direct = [resource])
