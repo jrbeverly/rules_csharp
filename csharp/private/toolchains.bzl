@@ -1,7 +1,7 @@
 def _csharp_toolchain_impl(ctx):
     return [
         platform_common.ToolchainInfo(
-            runtime = ctx.file.runtime,
+            runtime = ctx.attr.runtime.files_to_run,
             compiler = ctx.file.compiler,
         ),
     ]

@@ -36,4 +36,5 @@ cc_binary(
 csharp_wrapper(
     name = "main-cc",
     src = _WRAPPER_TEMPLATE,
+    target = ":dotnet.exe"
 )

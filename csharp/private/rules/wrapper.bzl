@@ -1,13 +1,10 @@
 def _csharp_wrapper_impl(ctx):
     cc_file = ctx.actions.declare_file("%s.cc" % (ctx.attr.name))
-
-    dotnet_exe = "%s/dotnet.exe" % ctx.file.src.dirname 
-    print(dotnet_exe)
     ctx.actions.expand_template(
         template = ctx.file.src,
         output = cc_file,
         substitutions = {
-            "{DotnetExe}": dotnet_exe,
+            "{DotnetExe}": ctx.file.target.short_path[3:] ,
         },
     )
 
@@ -22,6 +19,10 @@ csharp_wrapper = rule(
     implementation = _csharp_wrapper_impl,
     attrs = {
         "src": attr.label(
+            mandatory = True, 
+            allow_single_file = True
+        ),
+        "target": attr.label(
             mandatory = True, 
             allow_single_file = True
         ),
