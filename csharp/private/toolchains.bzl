@@ -25,7 +25,7 @@ csharp_toolchain = rule(
 )
 
 # This is called in BUILD
-def configure_toolchain(os, exe = "dotnet"):
+def configure_toolchain(os, exe = "dotnetw"):
     csharp_toolchain(
         name = "csharp_x86_64-" + os,
         runtime = "@netcore-sdk-%s//:%s" % (os, exe),

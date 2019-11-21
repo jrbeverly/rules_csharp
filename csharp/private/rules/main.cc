@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   envvars.push_back(evprintf("TEMP", dotnetDir));
   envvars.push_back(evprintf("USERPROFILE", dotnetDir));
   envvars.push_back(evprintf("DOTNET_CLI_TELEMETRY_OPTOUT", "1")); // disable telemetry
-
+  
   std::vector<char*> envp{};
   for(auto& envvar : envvars)
     envp.push_back(&envvar.front());

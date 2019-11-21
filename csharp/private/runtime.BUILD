@@ -1,5 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@d2l_rules_csharp//csharp:defs.bzl", "csharp_wrapper")
+
 _WRAPPER_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/main.cc"
 
 exports_files(
@@ -36,5 +37,10 @@ cc_binary(
 csharp_wrapper(
     name = "main-cc",
     src = _WRAPPER_TEMPLATE,
-    target = ":dotnet.exe"
+    target = glob(
+        [
+            "dotnet",
+            "dotnet.exe",
+        ],
+    ),
 )

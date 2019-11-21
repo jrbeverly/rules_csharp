@@ -4,7 +4,7 @@ def _csharp_wrapper_impl(ctx):
         template = ctx.file.src,
         output = cc_file,
         substitutions = {
-            "{DotnetExe}": ctx.file.target.short_path[3:],
+            "{DotnetExe}": ctx.files.target[0].short_path[3:],
         },
     )
 
@@ -22,9 +22,9 @@ csharp_wrapper = rule(
             mandatory = True, 
             allow_single_file = True
         ),
-        "target": attr.label(
+        "target": attr.label_list(
             mandatory = True, 
-            allow_single_file = True
+            allow_files = True,
         ),
     },
 )
