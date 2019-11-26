@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -19,6 +20,12 @@ std::string evprintf(std::string name, std::string path) {
   std::stringstream ss;
   ss << name << "=" << path;
   return ss.str();
+}
+
+std::string slurp(std::ifstream& in) {
+  std::stringstream sstr;
+  sstr << in.rdbuf();
+  return sstr.str();
 }
 
 int main(int argc, char** argv) {
@@ -56,50 +63,38 @@ int main(int argc, char** argv) {
   //
   // Write the csproj to disk
   // then use that for all of this
-  ofstream csproj;               
+  auto template = runfiles->Rlocation("{CsProjTemplateFile}");
+  ifstream ifs(template.c_str(), ios::in | ios::ate);
+  auto contents = slurp(ifs);
 
-  csproj.open("%s.csproj");
-  if (!csproj) {
-    std::cerr << "Error: file could not be opened" << std::endl;
-    return 404;
-  }
-  //read all text
-  //string replace to fill in 3 params (net framework, resx path, ManifestResourceName)
-  //write this to local csproj file.
-  csproj << num[i] << std::endl;
-  csproj.close();
+  std::string netFramework = string(getenv("BAZEL_CSHARP_RESX_FRAMEWORK"));
+  std::string resXFile = string(getenv("BAZEL_CSHARP_RESX_FILE"));
+  std::string manifestName = string(getenv("BAZEL_CSHARP_RESX_MANIFEST"));
+
+  contents.replace(contents.find(netFramework, 0), netFramework.size(),
+                   netFramework);
+  contents.replace(contents.find(resXFile, 0), resXFile.size(), resXFile);
+  contents.replace(contents.find(manifestName, 0), manifestName.size(),
+                   manifestName);
+
+  auto csproj = "template.csproj";
+  ofstream csprojfile;
+  csprojfile.open(csproj);
+  csprojfile << contents;
+  csprojfile.close();
 
   // This needs to be a list like so:
   // dotnetw build --project <path-to-project>
-  auto dotnet_argv = new char*[argc];
-  dotnet_argv[0] = (char*)"dotnet";
-  for (int i = 1; i < argc; i++) {
-    dotnet_argv[i] = argv[i];
-  }
-  dotnet_argv[argc] = nullptr;
+  auto dotnet_argv = new char* [4] { "dotnet", "build", csproj, nullptr };
 
 #ifdef _WIN32
-  // _spawnve has a limit on the size of the environment variables
-  // passed to the process. So here we will set the environment
-  // variables for this process, and the spawned instance will inherit them
-  for (int i = 1; i < envvars.size(); i++) {
-    putenv(envvars[i].c_str());
-  }
-
   // run `dotnet.exe` and wait for it to complete
   // the output from this cmd will be emitted to stdout
   auto result = _spawnv(_P_WAIT, dotnet.c_str(), dotnet_argv);
 #else
-  auto envc = envvars.size();
-  auto envp = new char*[envc + 1];
-  for (uint i = 0; i < envc; i++) {
-    envp[i] = &envvars[i][0];
-  }
-  envp[envc] = nullptr;
-
   // run `dotnet.exe` and wait for it to complete
   // the output from this cmd will be emitted to stdout
-  auto result = execve(dotnet.c_str(), const_cast<char**>(dotnet_argv), envp);
+  auto result = execv(dotnet.c_str(), const_cast<char**>(dotnet_argv));
 #endif  // _WIN32
   if (result != 0) {
     std::cout << "dotnet failed: " << errno << std::endl;
