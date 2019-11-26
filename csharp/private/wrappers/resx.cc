@@ -60,7 +60,6 @@ int main(int argc, char** argv) {
   // dotnet wants this to either be dotnet or dotnet.exe but doesn't have a
   // preference otherwise.
 
-  //
   // Write the csproj to disk
   // then use that for all of this
   auto template = runfiles->Rlocation("{CsProjTemplateFile}");
@@ -71,10 +70,10 @@ int main(int argc, char** argv) {
   std::string resXFile = string(getenv("BAZEL_CSHARP_RESX_FILE"));
   std::string manifestName = string(getenv("BAZEL_CSHARP_RESX_MANIFEST"));
 
-  contents.replace(contents.find(netFramework, 0), netFramework.size(),
+  contents.replace(contents.find("NET_FRAMEWORK", 0), netFramework.size(),
                    netFramework);
-  contents.replace(contents.find(resXFile, 0), resXFile.size(), resXFile);
-  contents.replace(contents.find(manifestName, 0), manifestName.size(),
+  contents.replace(contents.find("RESX_FILE", 0), resXFile.size(), resXFile);
+  contents.replace(contents.find("MANIFEST", 0), manifestName.size(),
                    manifestName);
 
   auto csproj = "template.csproj";

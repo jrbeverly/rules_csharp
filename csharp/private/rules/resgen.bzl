@@ -2,9 +2,11 @@ load(
     "@d2l_rules_csharp//csharp/private:providers.bzl",
     "CSharpResource",
 )
+load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 # Label of the csproj template for ResX compilation
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
+_WRAPPER = "@d2l_rules_csharp//csharp/private:wrappers/resx.cc"
 
 # When compiling the csproj, it will look for the embedded resources related to
 # the path of the csproj on disk. Since the csproj is written by the bazel, it will
@@ -22,32 +24,27 @@ def _csharp_resx_impl(ctx):
     else:
         resource_name = ctx.attr.out
 
-    csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
-    resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
-
-    ctx.actions.expand_template(
-        template = ctx.file._csproj_template,
-        output = csproj,
-        substitutions = {
-            "{TargetFramework}": ctx.attr.target_framework,
-            "{Resx}": _bazel_to_relative_path(ctx.file.src.path),
-            "{ManifestResourceName}": resource_name,
-        },
+    cc_binary(
+        name = "%s-cc" % (ctx.attr.name),
+        srcs = [_WRAPPER],
+        data = [_TEMPLATE],
+        deps = ["@bazel_tools//tools/cpp/runfiles"],
     )
 
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
-
-    args = ctx.actions.args()
-    args.add("build")
-    args.add(csproj.path)
-
+    resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
     ctx.actions.run(
         inputs = [ctx.file.src, csproj],
         outputs = [resource],
         executable = toolchain.runtime,
-        arguments = [args],
+        arguments = [],
         mnemonic = "CompileResX",
         progress_message = "Compiling resx file to binary",
+        env = {
+            "BAZEL_CSHARP_RESX_FRAMEWORK": ctx.attr.target_framework,
+            "BAZEL_CSHARP_RESX_FILE": _bazel_to_relative_path(ctx.file.src.path),
+            "BAZEL_CSHARP_RESX_MANIFEST": resource_name,
+        },
     )
 
     files = depset(direct = [resource])
