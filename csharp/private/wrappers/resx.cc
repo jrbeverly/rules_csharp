@@ -8,10 +8,10 @@
 #include <errno.h>
 #include <process.h>
 #include <windows.h>
-#else // not _WIN32
+#else  // not _WIN32
 #include <stdlib.h>
 #include <unistd.h>
-#endif // _WIN32
+#endif  // _WIN32
 
 #include "tools/cpp/runfiles/runfiles.h"
 
@@ -23,13 +23,13 @@ std::string evprintf(std::string name, std::string path) {
   return ss.str();
 }
 
-std::string slurp(std::ifstream &in) {
+std::string slurp(std::ifstream& in) {
   std::stringstream sstr;
   sstr << in.rdbuf();
   return sstr.str();
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   std::string error;
 
   auto runfiles = Runfiles::Create(argv[0], &error);
@@ -73,9 +73,14 @@ int main(int argc, char **argv) {
   std::string t_name = "BazelResXManifestResourceName";
   contents.replace(contents.find(t_name, 0), t_name.length(), manifest);
 
-  std::cout << "Template:" << contents << std::endl;
+  auto program = std::string(argv[0]);
+  auto programDir = program.substr(0, program.find_last_of("/\\"));
+  std::cout << "programDir: " << programDir << std::endl;
+  std::stringstream templateFileName;
+  templateFileName << programDir << "\\" << "template.csproj";
+  auto template_out = templateFileName.str();
 
-  auto template_out = "template.csproj";
+  std::cout << "Template: " << template_out << std::endl;
   std::ofstream csprojfile;
   csprojfile.open(template_out);
   csprojfile << contents;

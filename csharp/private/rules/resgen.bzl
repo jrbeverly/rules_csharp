@@ -67,7 +67,6 @@ def _csharp_resx_build_impl(ctx):
     resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
 
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
-    # print(dir(ctx.attr.src))
     ctx.actions.run(
         inputs = [],
         outputs = [csproj],
@@ -138,6 +137,7 @@ def csharp_resx(name, src):
     csharp_resx_template(
         name = "%s-template" % (name),
         src = src,
+        out = name,
     )
 
     native.cc_binary(
