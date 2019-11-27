@@ -2,40 +2,79 @@ load(
     "@d2l_rules_csharp//csharp/private:providers.bzl",
     "CSharpResource",
 )
+# load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 # Label of the csproj template for ResX compilation
-_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
+_TEMPLATE = "@d2l_rules_csharp//csharp/private:wrappers/resx.cc"
+_CSPROJ_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
 
-# When compiling the csproj, it will look for the embedded resources related to
-# the path of the csproj on disk. Since the csproj is written by the bazel, it will
-# be in the rule bin directory. If we want to get the relative path to the
-# ResX files, we need to get to a junction/symlink for the source.
-#
-# The junction/symlink that we are using is 4 directories up (\bazel-out\<sandbox>\bin\<name>\)
-def _bazel_to_relative_path(path):
-    return "../../../../%s" % (path)
+def _csharp_resx_template_impl(ctx):
+    if not ctx.attr.out:
+        resource_name = ctx.attr.name
+    else:
+        resource_name = ctx.attr.out
 
-def _csharp_resx_impl(ctx):
+    cc_file = ctx.actions.declare_file("%s.cc" % (ctx.attr.name))
+    ctx.actions.expand_template(
+        template = ctx.file._template,
+        output = cc_file,
+        substitutions = {
+            "{ResXFile}": "%s" % (ctx.file.src.path),
+            "{ResXManifest}": resource_name,
+            "{CsProjTemplate}": "%s" % (ctx.file._csproj_template.path),
+            "{NetFramework}": ctx.attr.target_framework,
+        },
+    )
+    return [
+        DefaultInfo(
+            files = depset(direct = [cc_file]),
+        ),
+    ]
+
+csharp_resx_template = rule(
+    implementation = _csharp_resx_template_impl,
+    attrs = {
+        "src": attr.label(
+            allow_single_file = True,
+        ),
+        "out": attr.string(
+            doc = "Specifies the name of the output (.resources) resource file. The extension is not necessary.",
+        ),
+        "target_framework": attr.string(
+            doc = "A target framework moniker used in building the resource file.",
+            default = "netcoreapp3.0",
+        ),
+        "_template": attr.label(
+            default = Label(_TEMPLATE),
+            allow_single_file = True,
+        ),
+        "_csproj_template": attr.label(
+            default = Label(_CSPROJ_TEMPLATE),
+            allow_single_file = True,
+        ),
+    },
+)
+
+
+def _csharp_resx_build_impl(ctx):
     """_csharp_resx_impl emits actions for compiling a resx file."""
     if not ctx.attr.out:
         resource_name = ctx.attr.name
     else:
         resource_name = ctx.attr.out
 
-    csproj = ctx.actions.declare_file("%s.csproj" % (ctx.attr.name))
+    csproj = ctx.actions.declare_file("template.csproj")
     resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
 
-    ctx.actions.expand_template(
-        template = ctx.file._csproj_template,
-        output = csproj,
-        substitutions = {
-            "{TargetFramework}": ctx.attr.target_framework,
-            "{Resx}": _bazel_to_relative_path(ctx.file.src.path),
-            "{ManifestResourceName}": resource_name,
-        },
-    )
-
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
+    ctx.actions.run(
+        inputs = [],
+        outputs = [csproj],
+        executable = ctx.file.src,
+        arguments = [],
+        mnemonic = "CreateCsProjTemplate",
+        progress_message = "Creating csproj template",
+    )
 
     args = ctx.actions.args()
     args.add("build")
@@ -62,8 +101,8 @@ def _csharp_resx_impl(ctx):
         ),
     ]
 
-csharp_resx = rule(
-    implementation = _csharp_resx_impl,
+csharp_resx_build = rule(
+    implementation = _csharp_resx_build_impl,
     attrs = {
         "src": attr.label(
             doc = "The XML-based resource format (.resx) file.",
@@ -80,14 +119,34 @@ csharp_resx = rule(
             doc = "A target framework moniker used in building the resource file.",
             default = "netcoreapp3.0",
         ),
-        "_csproj_template": attr.label(
-            doc = "The csproj template used in compiling the resx file.",
-            default = Label(_TEMPLATE),
-            allow_single_file = True,
-        ),
+        # "_csproj_template": attr.label(
+        #     doc = "The csproj template used in compiling the resx file.",
+        #     default = Label(_CSPROJ_TEMPLATE),
+        #     allow_single_file = True,
+        # ),
     },
     toolchains = ["@d2l_rules_csharp//csharp/private:toolchain_type"],
     doc = """
 Compiles an XML-based resource format (.resx) file into a binary resource (.resources) file.
 """,
 )
+
+
+def csharp_resx(name, src):
+    template = "%s-template" % (name)
+    csharp_resx_template(
+        name = "%s-template" % (name),
+        src = src,
+    )
+
+    native.cc_binary(
+        name = "%s-csproj" % (name),
+        data = [src, _CSPROJ_TEMPLATE],
+        srcs = ["%s" % (template)],
+        deps = ["@bazel_tools//tools/cpp/runfiles"],
+    )
+
+    csharp_resx_build(
+        name = "%s" % (name),
+        src = "%s-csproj" % (name),
+    )
