@@ -4,13 +4,13 @@ load(
     "csharp_resx"
 )
 
-csharp_binary(
-    name = "hello",
-    srcs = ["hello.cs", "Strings.Designer.cs"],
-    resources = [":Hello.Strings"],
-    target_frameworks = ["net472"],
-    deps = ["@net//:System.Linq"],
-)
+# csharp_binary(
+#     name = "hello",
+#     srcs = ["hello.cs", "Strings.Designer.cs"],
+#     resources = [":Hello.Strings"],
+#     target_frameworks = ["net472"],
+#     deps = ["@net//:System.Linq"],
+# )
 
 csharp_resx(
     name = "Hello.Strings",

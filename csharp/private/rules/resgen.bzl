@@ -19,9 +19,9 @@ def _csharp_resx_template_impl(ctx):
         template = ctx.file._template,
         output = cc_file,
         substitutions = {
-            "{ResXFile}": "%s" % (ctx.file.src.path),
+            "{ResXFile}": "__main__/%s" % (ctx.file.src.path),
             "{ResXManifest}": resource_name,
-            "{CsProjTemplate}": "%s" % (ctx.file._csproj_template.path),
+            "{CsProjTemplate}": "%s" % (ctx.file._csproj_template.short_path[3:]),
             "{NetFramework}": ctx.attr.target_framework,
         },
     )
@@ -67,10 +67,11 @@ def _csharp_resx_build_impl(ctx):
     resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
 
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
+    # print(dir(ctx.attr.src))
     ctx.actions.run(
         inputs = [],
         outputs = [csproj],
-        executable = ctx.file.src,
+        executable = ctx.attr.src.files_to_run,
         arguments = [],
         mnemonic = "CreateCsProjTemplate",
         progress_message = "Creating csproj template",
