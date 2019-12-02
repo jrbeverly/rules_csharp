@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
   auto programDir = program.substr(0, program.find_last_of("/\\"));
   std::cout << "programDir: " << programDir << std::endl;
   std::stringstream templateFileName;
-  templateFileName << programDir << "\\" << "template.csproj";
+  templateFileName << programDir << "\\" << "{TemplateName}";
   auto template_out = templateFileName.str();
 
   std::cout << "Template: " << template_out << std::endl;

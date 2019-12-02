@@ -23,6 +23,7 @@ def _csharp_resx_template_impl(ctx):
             "{ResXManifest}": resource_name,
             "{CsProjTemplate}": "%s" % (ctx.file._csproj_template.short_path[3:]),
             "{NetFramework}": ctx.attr.target_framework,
+            "{TemplateName}": "%s.csproj" % (ctx.attr.name),
         },
     )
     return [
@@ -55,7 +56,6 @@ csharp_resx_template = rule(
     },
 )
 
-
 def _csharp_resx_build_impl(ctx):
     """_csharp_resx_impl emits actions for compiling a resx file."""
     if not ctx.attr.out:
@@ -63,7 +63,7 @@ def _csharp_resx_build_impl(ctx):
     else:
         resource_name = ctx.attr.out
 
-    csproj = ctx.actions.declare_file("template.csproj")
+    csproj = ctx.actions.declare_file(ctx.attr.csproj)
     resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
 
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
@@ -115,6 +115,9 @@ csharp_resx_build = rule(
         "out": attr.string(
             doc = "Specifies the name of the output (.resources) resource file. The extension is not necessary.",
         ),
+        "csproj": attr.string(
+            doc = "Specifies the name of the output (.resources) resource file. The extension is not necessary.",
+        ),
         "target_framework": attr.string(
             doc = "A target framework moniker used in building the resource file.",
             default = "netcoreapp3.0",
@@ -130,7 +133,6 @@ csharp_resx_build = rule(
 Compiles an XML-based resource format (.resx) file into a binary resource (.resources) file.
 """,
 )
-
 
 def csharp_resx(name, src):
     template = "%s-template" % (name)
@@ -150,4 +152,5 @@ def csharp_resx(name, src):
     csharp_resx_build(
         name = "%s" % (name),
         src = "%s-csproj" % (name),
+        csproj = "%s-template.csproj" % (name),
     )
