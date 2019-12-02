@@ -14,6 +14,12 @@ def _csharp_resx_template_impl(ctx):
     else:
         resource_name = ctx.attr.out
 
+    print(ctx.file.srcs.path)
+    print(ctx.file.srcs.root.path)
+    print(ctx.file.srcs.owner)
+    print(ctx.attr.srcs.label.workspace_name)
+    print(dir(ctx.file.srcs))
+    print(dir(ctx.attr.srcs.label))
     cc_file = ctx.actions.declare_file("%s.cc" % (ctx.attr.name))
     ctx.actions.expand_template(
         template = ctx.file._template,
