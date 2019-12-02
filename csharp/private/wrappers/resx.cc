@@ -76,10 +76,8 @@ int main(int argc, char** argv) {
   auto program = std::string(argv[0]);
   auto programDir = program.substr(0, program.find_last_of("/\\"));
   std::cout << "programDir: " << programDir << std::endl;
-  std::stringstream templateFileName;
-  templateFileName << programDir << "\\" << "{TemplateName}";
-  auto template_out = templateFileName.str();
 
+  auto template_out = std::string(argv[1]);
   std::cout << "Template: " << template_out << std::endl;
   std::ofstream csprojfile;
   csprojfile.open(template_out);

@@ -19,11 +19,10 @@ def _csharp_resx_template_impl(ctx):
         template = ctx.file._template,
         output = cc_file,
         substitutions = {
-            "{ResXFile}": "__main__/%s" % (ctx.file.src.path),
+            "{ResXFile}": ctx.file.srcs.short_path,
             "{ResXManifest}": resource_name,
             "{CsProjTemplate}": "%s" % (ctx.file._csproj_template.short_path[3:]),
             "{NetFramework}": ctx.attr.target_framework,
-            "{TemplateName}": "%s.csproj" % (ctx.attr.name),
         },
     )
     return [
@@ -35,7 +34,7 @@ def _csharp_resx_template_impl(ctx):
 csharp_resx_template = rule(
     implementation = _csharp_resx_template_impl,
     attrs = {
-        "src": attr.label(
+        "srcs": attr.label(
             allow_single_file = True,
         ),
         "out": attr.string(
@@ -63,15 +62,14 @@ def _csharp_resx_build_impl(ctx):
     else:
         resource_name = ctx.attr.out
 
+    for r in ctx.attr.tool.default_runfiles.files.to_list():
+        print(r.path)
     csproj = ctx.actions.declare_file(ctx.attr.csproj)
-    resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
-
-    toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
     ctx.actions.run(
-        inputs = [],
+        inputs = [ctx.file._csproj_template],
         outputs = [csproj],
-        executable = ctx.attr.src.files_to_run,
-        arguments = [],
+        executable = ctx.attr.tool.files_to_run,
+        arguments = [csproj.path],
         mnemonic = "CreateCsProjTemplate",
         progress_message = "Creating csproj template",
     )
@@ -80,8 +78,11 @@ def _csharp_resx_build_impl(ctx):
     args.add("build")
     args.add(csproj.path)
 
+    toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
+
+    resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
     ctx.actions.run(
-        inputs = [ctx.file.src, csproj],
+        inputs = [csproj, ctx.file.srcs],
         outputs = [resource],
         executable = toolchain.runtime,
         arguments = [args],
@@ -104,10 +105,16 @@ def _csharp_resx_build_impl(ctx):
 csharp_resx_build = rule(
     implementation = _csharp_resx_build_impl,
     attrs = {
-        "src": attr.label(
+        "srcs": attr.label(
             doc = "The XML-based resource format (.resx) file.",
             mandatory = True,
             allow_single_file = True,
+        ),
+        "tool": attr.label(
+            doc = "The tool responsible for generating a csproj file.",
+            mandatory = True,
+            executable = True,
+            cfg = "host",
         ),
         "identifier": attr.string(
             doc = "The logical name for the resource; the name that is used to load the resource. The default is the name of the rule.",
@@ -122,11 +129,11 @@ csharp_resx_build = rule(
             doc = "A target framework moniker used in building the resource file.",
             default = "netcoreapp3.0",
         ),
-        # "_csproj_template": attr.label(
-        #     doc = "The csproj template used in compiling the resx file.",
-        #     default = Label(_CSPROJ_TEMPLATE),
-        #     allow_single_file = True,
-        # ),
+        "_csproj_template": attr.label(
+            doc = "The csproj template used in compiling the resx file.",
+            default = Label(_CSPROJ_TEMPLATE),
+            allow_single_file = True,
+        ),
     },
     toolchains = ["@d2l_rules_csharp//csharp/private:toolchain_type"],
     doc = """
@@ -136,21 +143,24 @@ Compiles an XML-based resource format (.resx) file into a binary resource (.reso
 
 def csharp_resx(name, src):
     template = "%s-template" % (name)
+    csproj = "%s-csproj" % (name)
+
     csharp_resx_template(
-        name = "%s-template" % (name),
-        src = src,
+        name = template,
+        srcs = src,
         out = name,
     )
 
     native.cc_binary(
-        name = "%s-csproj" % (name),
+        name = csproj,
+        srcs = [template],
         data = [src, _CSPROJ_TEMPLATE],
-        srcs = ["%s" % (template)],
         deps = ["@bazel_tools//tools/cpp/runfiles"],
     )
 
     csharp_resx_build(
-        name = "%s" % (name),
-        src = "%s-csproj" % (name),
+        name = name,
+        srcs = src,
+        tool = csproj,
         csproj = "%s-template.csproj" % (name),
     )
