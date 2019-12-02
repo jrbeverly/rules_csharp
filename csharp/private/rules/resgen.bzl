@@ -19,7 +19,7 @@ def _csharp_resx_template_impl(ctx):
         template = ctx.file._template,
         output = cc_file,
         substitutions = {
-            "{ResXFile}": ctx.file.srcs.short_path,
+            "{ResXFile}": ctx.file.srcs.path,
             "{ResXManifest}": resource_name,
             "{CsProjTemplate}": "%s" % (ctx.file._csproj_template.short_path[3:]),
             "{NetFramework}": ctx.attr.target_framework,
