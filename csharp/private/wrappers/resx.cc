@@ -4,6 +4,7 @@
 #include <sstream>
 #include <stdio.h>
 #include <string>
+#include <algorithm>
 
 #ifdef _WIN32
 #include <errno.h>
@@ -39,12 +40,6 @@ int main(int argc, char** argv) {
     return 101;
   }
 
-  auto dotnet = runfiles->Rlocation("{DotnetExe}");
-  if (dotnet.empty()) {
-    std::cerr << "Couldn't find the .NET runtime" << std::endl;
-    return 404;
-  }
- 
   // csproj template for building resx files
   std::cout << "resx ref: "
             << "{ResXFile}" << std::endl;
@@ -53,9 +48,26 @@ int main(int argc, char** argv) {
     std::cerr << "Couldn't find the resx file" << std::endl;
     return 404;
   }
-  // auto resx = "../../../../resgen/Strings.resx";
   std::cout << "resx: " << resx << std::endl;
 
+  auto template_out = std::string(argv[2]);
+  std::cout << "Template: " << template_out << std::endl;
+
+  auto templateDir = template_out.substr(template_out.find_last_of("/\\") + 1);
+  size_t dirsUp = std::count(template_out.begin(), template_out.end(), '/');
+  std::cout << "templateDir: " << templateDir << " : " << dirsUp << std::endl;
+  auto resxTmp = resx.substr(resx.find_first_of("/\\") + 1);
+
+  std::stringstream tsstr;
+  for (size_t i = 1; i < dirsUp; i++) {
+    tsstr << "../";
+  }
+  tsstr << resxTmp;
+  auto adjustedResX = tsstr.str();
+  std::cout << "adjustedResX: " << adjustedResX << std::endl;
+
+//bazel-out/k8-fastbuild/bin/resgen/Hello.Strings-template.csproj
+//bazel-out/host/bin/resgen/Hello.Strings-execv.runfiles/csharp_examples/resgen/Strings.resx
   // csproj template for building resx files
   std::cout << "csproj ref: "
             << "{CsProjTemplate}" << std::endl;
@@ -65,6 +77,15 @@ int main(int argc, char** argv) {
     return 404;
   }
   std::cout << "csproj: " << csproj << std::endl;
+
+  std::cout << "dotnet ref: "
+            << "{DotnetExe}" << std::endl;
+  auto dotnet = runfiles->Rlocation("{DotnetExe}");
+  if (dotnet.empty()) {
+    std::cerr << "Couldn't find the .NET runtime" << std::endl;
+    return 404;
+  }
+  // auto dotnet = std::string("{DotnetExe}");
 
   std::ifstream ifs(csproj.c_str());
   std::string contents = slurp(ifs);
@@ -76,14 +97,11 @@ int main(int argc, char** argv) {
   contents.replace(contents.find(t_fmwk, 0), t_fmwk.length(), netFramework);
 
   std::string t_file = "BazelResXFile";
-  contents.replace(contents.find(t_file, 0), t_file.length(), resx);
+  contents.replace(contents.find(t_file, 0), t_file.length(), adjustedResX);
 
   std::string t_name = "BazelResXManifestResourceName";
   contents.replace(contents.find(t_name, 0), t_name.length(), manifest);
 
-  // Set as ENV VAR
-  auto template_out = std::string(argv[1]);
-  std::cout << "Template: " << template_out << std::endl;
   std::ofstream csprojfile;
   csprojfile.open(template_out);
   csprojfile << contents;

@@ -12,12 +12,10 @@ def _csharp_resx_execv_impl(ctx):
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
     exe, runfiles = toolchain.tool
 
-#bazel-out/host/bin/resgen/Hello.Strings-execv.runfiles/csharp_examples/resgen/Strings.resx
-    tool_path = toolchain.runtime.executable.short_path[3:]
+    tool_path = ctx.attr.tool[DefaultInfo].files_to_run.executable.short_path
     command = """#!/bin/bash
         export RUNFILES_DIR="$0.runfiles"
-        echo $RUNFILES_DIR
-        ${RUNFILES_DIR}/%s $@""" % (tool_path)
+        ./${RUNFILES_DIR}/%s/%s $@""" % (ctx.workspace_name, tool_path)
 
     ctx.actions.write(
         output = ctx.outputs.executable,
@@ -26,8 +24,6 @@ def _csharp_resx_execv_impl(ctx):
     )
 
     exec_runfiles = runfiles.merge(ctx.attr.tool[DefaultInfo].default_runfiles)
-    # for r in exec_runfiles.files.to_list():
-        # print(r.path)
     return [DefaultInfo(
         runfiles = exec_runfiles,
     )]
@@ -50,6 +46,7 @@ def _csharp_resx_template_impl(ctx):
     else:
         resource_name = ctx.attr.out
 
+    toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
     cc_file = ctx.actions.declare_file("%s.cc" % (ctx.attr.name))
     ctx.actions.expand_template(
         template = ctx.file._template,
@@ -59,6 +56,7 @@ def _csharp_resx_template_impl(ctx):
             "{ResXManifest}": resource_name,
             "{CsProjTemplate}": "%s" % (ctx.file._csproj_template.short_path[3:]),
             "{NetFramework}": ctx.attr.target_framework,
+            "{DotnetExe}": toolchain.runtime.executable.short_path[3:],
         },
     )
     return [
@@ -89,6 +87,7 @@ csharp_resx_template = rule(
             allow_single_file = True,
         ),
     },
+    toolchains = ["@d2l_rules_csharp//csharp/private:toolchain_type"],
 )
 
 def _csharp_resx_build_impl(ctx):
@@ -98,26 +97,27 @@ def _csharp_resx_build_impl(ctx):
     else:
         resource_name = ctx.attr.out
 
-    csproj = ctx.actions.declare_file(ctx.attr.csproj)
-    ctx.actions.run(
-        inputs = [ctx.file._csproj_template],
-        outputs = [csproj],
-        executable = ctx.attr.tool.files_to_run,
-        arguments = [csproj.path],
-        mnemonic = "CreateCsProjTemplate",
-        progress_message = "Creating csproj template",
-    )
+    # csproj = ctx.actions.declare_file(ctx.attr.csproj)
+    # ctx.actions.run(
+    #     inputs = [ctx.file._csproj_template],
+    #     outputs = [csproj],
+    #     executable = ctx.attr.tool.files_to_run,
+    #     arguments = [csproj.path],
+    #     mnemonic = "CreateCsProjTemplate",
+    #     progress_message = "Creating csproj template",
+    # )
 
+    csproj = ctx.actions.declare_file(ctx.attr.csproj)
     args = ctx.actions.args()
     args.add("build")
     args.add(csproj.path)
 
-    toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
+    # toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
 
     resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
     ctx.actions.run(
-        inputs = [csproj, ctx.file.srcs],
-        outputs = [resource],
+        inputs = [ctx.file.srcs],
+        outputs = [csproj, resource],
         # executable = toolchain.runtime,
         executable = ctx.executable.dotnet,
         arguments = [args],

@@ -62,7 +62,6 @@ int main(int argc, char** argv) {
   dotnet_argv[0] = (char*)"dotnet";
   for (int i = 1; i < argc; i++) {
     dotnet_argv[i] = argv[i];
-    std::cout << argv[i] << std::endl;
   }
   dotnet_argv[argc] = nullptr;
 
