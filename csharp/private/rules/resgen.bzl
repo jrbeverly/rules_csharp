@@ -7,15 +7,19 @@ load(
 # Label of the csproj template for ResX compilation
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:wrappers/resx.cc"
 _CSPROJ_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
+script_template = """\
+#!/bin/bash
+ls
+export RUNFILES_DIR="$0.runfiles"
+./${RUNFILES_DIR}/%s/%s $@
+"""
 
 def _csharp_resx_execv_impl(ctx):
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
     exe, runfiles = toolchain.tool
 
     tool_path = ctx.attr.tool[DefaultInfo].files_to_run.executable.short_path
-    command = """#!/bin/bash
-        export RUNFILES_DIR="$0.runfiles"
-        ./${RUNFILES_DIR}/%s/%s $@""" % (ctx.workspace_name, tool_path)
+    command = script_template % (ctx.workspace_name, tool_path)
 
     ctx.actions.write(
         output = ctx.outputs.executable,
@@ -113,13 +117,13 @@ def _csharp_resx_build_impl(ctx):
     args.add(csproj.path)
 
     # toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
-
     resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
-    ctx.actions.run(
+    ctx.actions.run_shell(
         inputs = [ctx.file.srcs],
         outputs = [csproj, resource],
         # executable = toolchain.runtime,
-        executable = ctx.executable.dotnet,
+        tools = [ctx.executable.dotnet],
+        command = ctx.executable.dotnet.path,
         arguments = [args],
         mnemonic = "CompileResX",
         progress_message = "Compiling resx file to binary",
