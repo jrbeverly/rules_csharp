@@ -8,19 +8,54 @@ load(
 _TEMPLATE = "@d2l_rules_csharp//csharp/private:wrappers/resx.cc"
 _CSPROJ_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
 
+def _csharp_resx_execv_impl(ctx):
+    toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
+    exe, runfiles = toolchain.tool
+
+#bazel-out/host/bin/resgen/Hello.Strings-execv.runfiles/csharp_examples/resgen/Strings.resx
+    tool_path = toolchain.runtime.executable.short_path[3:]
+    command = """#!/bin/bash
+        export RUNFILES_DIR="$0.runfiles"
+        ls bazel-out/host/bin/resgen/
+        ${RUNFILES_DIR}/%s $@""" % (tool_path)
+
+    ctx.actions.write(
+        output = ctx.outputs.executable,
+        content = command,
+        is_executable = True,
+    )
+
+    exec_runfiles = runfiles.merge(ctx.attr.tool[DefaultInfo].default_runfiles)
+    for r in exec_runfiles.files.to_list():
+        print(r.path)
+    return [DefaultInfo(
+        runfiles = exec_runfiles,
+    )]
+
+csharp_resx_execv = rule(
+    implementation = _csharp_resx_execv_impl,
+    executable = True,
+    attrs = {
+        "tool": attr.label(
+            doc = "The tool responsible for generating a csproj file.",
+            mandatory = True,
+        ),
+    },
+    toolchains = ["@d2l_rules_csharp//csharp/private:toolchain_type"],
+)
+
 def _csharp_resx_template_impl(ctx):
     if not ctx.attr.out:
         resource_name = ctx.attr.name
     else:
         resource_name = ctx.attr.out
 
-    workspace = "csharp_examples"
     cc_file = ctx.actions.declare_file("%s.cc" % (ctx.attr.name))
     ctx.actions.expand_template(
         template = ctx.file._template,
         output = cc_file,
         substitutions = {
-            "{ResXFile}": "%s/%s" % (workspace, ctx.file.srcs.path),
+            "{ResXFile}": "%s/%s" % (ctx.workspace_name, ctx.file.srcs.path),
             "{ResXManifest}": resource_name,
             "{CsProjTemplate}": "%s" % (ctx.file._csproj_template.short_path[3:]),
             "{NetFramework}": ctx.attr.target_framework,
@@ -63,8 +98,6 @@ def _csharp_resx_build_impl(ctx):
     else:
         resource_name = ctx.attr.out
 
-    for r in ctx.attr.tool.default_runfiles.files.to_list():
-        print(r.path)
     csproj = ctx.actions.declare_file(ctx.attr.csproj)
     ctx.actions.run(
         inputs = [ctx.file._csproj_template],
@@ -85,7 +118,8 @@ def _csharp_resx_build_impl(ctx):
     ctx.actions.run(
         inputs = [csproj, ctx.file.srcs],
         outputs = [resource],
-        executable = toolchain.runtime,
+        # executable = toolchain.runtime,
+        executable = ctx.executable.dotnet,
         arguments = [args],
         mnemonic = "CompileResX",
         progress_message = "Compiling resx file to binary",
@@ -114,8 +148,14 @@ csharp_resx_build = rule(
         "tool": attr.label(
             doc = "The tool responsible for generating a csproj file.",
             mandatory = True,
-            # executable = True,
-            # cfg = "host",
+            executable = True,
+            cfg = "host",
+        ),
+        "dotnet": attr.label(
+            doc = "The tool responsible for generating a csproj file.",
+            mandatory = True,
+            executable = True,
+            cfg = "host",
         ),
         "identifier": attr.string(
             doc = "The logical name for the resource; the name that is used to load the resource. The default is the name of the rule.",
@@ -145,6 +185,7 @@ Compiles an XML-based resource format (.resx) file into a binary resource (.reso
 def csharp_resx(name, src):
     template = "%s-template" % (name)
     csproj = "%s-csproj" % (name)
+    execv = "%s-execv" % (name)
 
     csharp_resx_template(
         name = template,
@@ -159,9 +200,15 @@ def csharp_resx(name, src):
         deps = ["@bazel_tools//tools/cpp/runfiles"],
     )
 
+    csharp_resx_execv(
+        name = execv,
+        tool = csproj,
+    )
+
     csharp_resx_build(
         name = name,
         srcs = src,
         tool = csproj,
+        dotnet = execv,
         csproj = "%s-template.csproj" % (name),
     )

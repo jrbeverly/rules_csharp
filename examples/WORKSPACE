@@ -1,3 +1,5 @@
+workspace(name = "csharp_examples")
+
 local_repository(
     name = "d2l_rules_csharp",
     path = "..",

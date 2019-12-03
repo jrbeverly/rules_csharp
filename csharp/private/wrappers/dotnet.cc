@@ -36,7 +36,14 @@ int main(int argc, char** argv) {
     std::cerr << "Couldn't find the .NET runtime" << std::endl;
     return 404;
   }
-
+  char cwd[256];
+  if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    printf("Current working dir: %s\n", cwd);
+  }
+  
+  ///bazel-out/host/bin/resgen/
+  std::string cmdtext = "ls -a resgen/ > /tmp/here.txt";
+  system(cmdtext.c_str());
   // Get the name of the directory containing dotnet.exe
   auto dotnetDir = dotnet.substr(0, dotnet.find_last_of("/\\"));
 
@@ -62,6 +69,7 @@ int main(int argc, char** argv) {
   dotnet_argv[0] = (char*)"dotnet";
   for (int i = 1; i < argc; i++) {
     dotnet_argv[i] = argv[i];
+    std::cout << argv[i] << std::endl;
   }
   dotnet_argv[argc] = nullptr;
 
