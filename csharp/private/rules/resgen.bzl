@@ -16,7 +16,7 @@ def _csharp_resx_execv_impl(ctx):
     tool_path = toolchain.runtime.executable.short_path[3:]
     command = """#!/bin/bash
         export RUNFILES_DIR="$0.runfiles"
-        ls bazel-out/host/bin/resgen/
+        echo $RUNFILES_DIR
         ${RUNFILES_DIR}/%s $@""" % (tool_path)
 
     ctx.actions.write(
@@ -26,8 +26,8 @@ def _csharp_resx_execv_impl(ctx):
     )
 
     exec_runfiles = runfiles.merge(ctx.attr.tool[DefaultInfo].default_runfiles)
-    for r in exec_runfiles.files.to_list():
-        print(r.path)
+    # for r in exec_runfiles.files.to_list():
+        # print(r.path)
     return [DefaultInfo(
         runfiles = exec_runfiles,
     )]

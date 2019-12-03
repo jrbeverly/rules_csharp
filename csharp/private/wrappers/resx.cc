@@ -38,6 +38,12 @@ int main(int argc, char** argv) {
     std::cerr << "Couldn't load runfiles: " << error << std::endl;
     return 101;
   }
+
+  auto dotnet = runfiles->Rlocation("{DotnetExe}");
+  if (dotnet.empty()) {
+    std::cerr << "Couldn't find the .NET runtime" << std::endl;
+    return 404;
+  }
  
   // csproj template for building resx files
   std::cout << "resx ref: "
@@ -75,10 +81,7 @@ int main(int argc, char** argv) {
   std::string t_name = "BazelResXManifestResourceName";
   contents.replace(contents.find(t_name, 0), t_name.length(), manifest);
 
-  auto program = std::string(argv[0]);
-  auto programDir = program.substr(0, program.find_last_of("/\\"));
-  std::cout << "programDir: " << programDir << std::endl;
-
+  // Set as ENV VAR
   auto template_out = std::string(argv[1]);
   std::cout << "Template: " << template_out << std::endl;
   std::ofstream csprojfile;
@@ -86,10 +89,25 @@ int main(int argc, char** argv) {
   csprojfile << contents;
   csprojfile.close();
 
-  // if (result != 0) {
-  //   std::cout << "dotnet failed: " << errno << std::endl;
-  //   return -1;
-  // }
+  // dotnet wants this to either be dotnet or dotnet.exe but doesn't have a
+  // preference otherwise.
+  auto dotnet_argv = new char*[argc];
+  dotnet_argv[0] = (char*)"dotnet";
+  for (int i = 1; i < argc; i++) {
+    dotnet_argv[i] = argv[i];
+    std::cout << argv[i] << std::endl;
+  }
+  dotnet_argv[argc] = nullptr;
 
-  // return result;
+#ifdef _WIN32
+  auto result = _spawnv(_P_WAIT, dotnet.c_str(), dotnet_argv);
+#else
+  auto result = execv(dotnet.c_str(), const_cast<char**>(dotnet_argv));
+#endif  // _WIN32
+  if (result != 0) {
+    std::cout << "dotnet failed: " << errno << std::endl;
+    return -1;
+  }
+
+  return result;
 }
