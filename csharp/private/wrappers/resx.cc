@@ -2,6 +2,7 @@
 #include <ios>
 #include <iostream>
 #include <sstream>
+#include <stdio.h>
 #include <string>
 
 #ifdef _WIN32
@@ -38,10 +39,63 @@ int main(int argc, char** argv) {
     return 101;
   }
 
+  auto num1 = runfiles->Rlocation("csharp_examples/resgen/Strings.resx");
+  if (num1.empty()) {
+    std::cout << "Couldn't find the resx file" << std::endl;
+  }
+
+  char cwd[256];
+  if (getcwd(cwd, sizeof(cwd)) != NULL) {
+    printf("Current working dir: %s\n", cwd);
+  }
+  std::cout << std::string(cwd) << "/" << num1 << std::endl;
+
+  ///bazel-out/host/bin/resgen/
+  // std::string cmdtext = "ls -a " + std::string(cwd) + "/bazel-out/k8-fastbuild/bin/resgen/Hello.Strings-csproj.runfiles/csharp_examples/resgen/Strings.resx > /tmp/here.txt";
+  // system(cmdtext.c_str());
+  // std::cout << cmdtext << std::endl;
+  // // std::ifstream stm(
+  // //     "/root/.cache/bazel/_bazel_root/1a06c90be1eefea8b933cc8429eff806/"
+  // //     "execroot/csharp_examples/bazel-out/host/bin/resgen/"
+  // //     "Hello.Strings-csproj.runfiles_manifest");
+  // // std::ifstream stm(std::string(argv[0]) + ".runfiles/MANIFEST");
+  // std::ifstream stm(std::string(cwd) + "bazel-out/host/bin/resgen/Hello.Strings-csproj.runfiles_manifest");
+  // // std::ifstream stm("resgen/Hello.Strings-csproj.runfiles_manifest");
+  // if (!stm.is_open()) {
+  //   return -4527;
+  // }
+
+  // std::map<std::string, std::string> result;
+  // std::string line;
+  // std::getline(stm, line);
+  // std::size_t line_count = 1;
+  // std::string expected = "csharp_examples/resgen/Strings.resx";
+  // while (!line.empty()) {
+  //   std::string::size_type idx = line.find_first_of(' ');
+  //   if (idx == std::string::npos) {
+  //     return -4568;
+  //   }
+
+  //   std::string actual = line.substr(0, idx);
+  //   if (expected == actual) {
+  //     std::cout << "SAME" << std::endl;
+  //   }
+  //   result[line.substr(0, idx)] = line.substr(idx + 1);
+  //   std::cout << line.substr(0, idx) << " = " << line.substr(idx + 1)
+  //             << std::endl;
+  //   std::getline(stm, line);
+  //   ++line_count;
+  // }
+
+  // const auto value = result.find(expected);
+  // if (value != result.end()) {
+  //   std::cout << "FOUND: " << value->second << std::endl;
+  // }
+
   // csproj template for building resx files
   std::cout << "resx ref: "
             << "{ResXFile}" << std::endl;
-  auto resx = runfiles->Rlocation("{ResXFile}");
+  auto resx = std::string(cwd) + runfiles->Rlocation("{ResXFile}");
   if (resx.empty()) {
     std::cerr << "Couldn't find the resx file" << std::endl;
     return 404;

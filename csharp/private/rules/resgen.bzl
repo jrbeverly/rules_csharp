@@ -14,18 +14,13 @@ def _csharp_resx_template_impl(ctx):
     else:
         resource_name = ctx.attr.out
 
-    print(ctx.file.srcs.path)
-    print(ctx.file.srcs.root.path)
-    print(ctx.file.srcs.owner)
-    print(ctx.attr.srcs.label.workspace_name)
-    print(dir(ctx.file.srcs))
-    print(dir(ctx.attr.srcs.label))
+    workspace = "csharp_examples"
     cc_file = ctx.actions.declare_file("%s.cc" % (ctx.attr.name))
     ctx.actions.expand_template(
         template = ctx.file._template,
         output = cc_file,
         substitutions = {
-            "{ResXFile}": ctx.file.srcs.path,
+            "{ResXFile}": "%s/%s" % (workspace, ctx.file.srcs.path),
             "{ResXManifest}": resource_name,
             "{CsProjTemplate}": "%s" % (ctx.file._csproj_template.short_path[3:]),
             "{NetFramework}": ctx.attr.target_framework,
@@ -119,8 +114,8 @@ csharp_resx_build = rule(
         "tool": attr.label(
             doc = "The tool responsible for generating a csproj file.",
             mandatory = True,
-            executable = True,
-            cfg = "host",
+            # executable = True,
+            # cfg = "host",
         ),
         "identifier": attr.string(
             doc = "The logical name for the resource; the name that is used to load the resource. The default is the name of the rule.",
