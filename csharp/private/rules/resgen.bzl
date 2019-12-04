@@ -9,11 +9,31 @@ _TEMPLATE = "@d2l_rules_csharp//csharp/private:wrappers/resx.cc"
 _CSPROJ_TEMPLATE = "@d2l_rules_csharp//csharp/private:rules/ResGen.csproj"
 script_template = """\
 #!/bin/bash
-ls
-export RUNFILES_DIR="$0.runfiles"
-./${RUNFILES_DIR}/%s/%s $@
+set -euo pipefail
+# --- begin runfiles.bash initialization ---
+if [[ ! -d "${RUNFILES_DIR:-/dev/null}" && ! -f "${RUNFILES_MANIFEST_FILE:-/dev/null}" ]]; then
+    if [[ -f "$0.runfiles_manifest" ]]; then
+      export RUNFILES_MANIFEST_FILE="$0.runfiles_manifest"
+    elif [[ -f "$0.runfiles/MANIFEST" ]]; then
+      export RUNFILES_MANIFEST_FILE="$0.runfiles/MANIFEST"
+    elif [[ -f "$0.runfiles/bazel_tools/tools/bash/runfiles/runfiles.bash" ]]; then
+      export RUNFILES_DIR="$0.runfiles"
+    fi
+fi
+if [[ -f "${RUNFILES_DIR:-/dev/null}/bazel_tools/tools/bash/runfiles/runfiles.bash" ]]; then
+  source "${RUNFILES_DIR}/bazel_tools/tools/bash/runfiles/runfiles.bash"
+elif [[ -f "${RUNFILES_MANIFEST_FILE:-/dev/null}" ]]; then
+  source "$(grep -m1 "^bazel_tools/tools/bash/runfiles/runfiles.bash " \
+            "$RUNFILES_MANIFEST_FILE" | cut -d ' ' -f 2-)"
+else
+  echo >&2 "ERROR: cannot find @bazel_tools//tools/bash/runfiles:runfiles.bash"
+  exit 1
+fi
+# --- end runfiles.bash initialization ---
+dotnet_exe="$(rlocation %s/%s)"
+dotnet_path=$(echo "/$dotnet_exe" | sed 's/\\\\/\\//g' | sed 's/://')
+${dotnet_path} $@
 """
-
 def _csharp_resx_execv_impl(ctx):
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
     exe, runfiles = toolchain.tool
@@ -27,7 +47,9 @@ def _csharp_resx_execv_impl(ctx):
         is_executable = True,
     )
 
-    exec_runfiles = runfiles.merge(ctx.attr.tool[DefaultInfo].default_runfiles)
+    exec_runfiles = ctx.runfiles(files = [ctx.file._bash_runfiles])
+    exec_runfiles = exec_runfiles.merge(runfiles)
+    exec_runfiles = exec_runfiles.merge(ctx.attr.tool[DefaultInfo].default_runfiles)
     return [DefaultInfo(
         runfiles = exec_runfiles,
     )]
@@ -39,6 +61,11 @@ csharp_resx_execv = rule(
         "tool": attr.label(
             doc = "The tool responsible for generating a csproj file.",
             mandatory = True,
+        ),
+        "_bash_runfiles": attr.label(
+            doc = "The csproj template used in compiling the resx file.",
+            default = Label("@bazel_tools//tools/bash/runfiles"),
+            allow_single_file = True,
         ),
     },
     toolchains = ["@d2l_rules_csharp//csharp/private:toolchain_type"],
@@ -116,17 +143,16 @@ def _csharp_resx_build_impl(ctx):
     args.add("build")
     args.add(csproj.path)
 
-    # toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
     resource = ctx.actions.declare_file("obj/Debug/%s/%s.resources" % (ctx.attr.target_framework, resource_name))
     ctx.actions.run_shell(
         inputs = [ctx.file.srcs],
         outputs = [csproj, resource],
-        # executable = toolchain.runtime,
         tools = [ctx.executable.dotnet],
-        command = ctx.executable.dotnet.path,
-        arguments = [args],
+        command = "%s %s %s" % (ctx.executable.dotnet.path, "build", csproj.path),
+        # arguments = [args],
         mnemonic = "CompileResX",
         progress_message = "Compiling resx file to binary",
+        use_default_shell_env = False,
     )
 
     files = depset(direct = [resource])

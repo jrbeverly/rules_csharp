@@ -97,7 +97,11 @@ int main(int argc, char** argv) {
   contents.replace(contents.find(t_fmwk, 0), t_fmwk.length(), netFramework);
 
   std::string t_file = "BazelResXFile";
+#ifdef _WIN32
+  contents.replace(contents.find(t_file, 0), t_file.length(), resx);
+#else
   contents.replace(contents.find(t_file, 0), t_file.length(), adjustedResX);
+#endif  // _WIN32
 
   std::string t_name = "BazelResXManifestResourceName";
   contents.replace(contents.find(t_name, 0), t_name.length(), manifest);
@@ -107,20 +111,10 @@ int main(int argc, char** argv) {
   csprojfile << contents;
   csprojfile.close();
 
-  // dotnet wants this to either be dotnet or dotnet.exe but doesn't have a
-  // preference otherwise.
-  auto dotnet_argv = new char*[argc];
-  dotnet_argv[0] = (char*)"dotnet";
-  for (int i = 1; i < argc; i++) {
-    dotnet_argv[i] = argv[i];
-    std::cout << argv[i] << std::endl;
-  }
-  dotnet_argv[argc] = nullptr;
-
 #ifdef _WIN32
-  auto result = _spawnv(_P_WAIT, dotnet.c_str(), dotnet_argv);
+  auto result = _spawnv(_P_WAIT, dotnet.c_str(), argv);
 #else
-  auto result = execv(dotnet.c_str(), const_cast<char**>(dotnet_argv));
+  auto result = execv(dotnet.c_str(), const_cast<char**>(argv));
 #endif  // _WIN32
   if (result != 0) {
     std::cout << "dotnet failed: " << errno << std::endl;
