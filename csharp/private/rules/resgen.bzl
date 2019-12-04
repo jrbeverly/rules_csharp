@@ -31,8 +31,12 @@ else
 fi
 # --- end runfiles.bash initialization ---
 dotnet_exe="$(rlocation %s/%s)"
-dotnet_path=$(echo "/$dotnet_exe" | sed 's/\\\\/\\//g' | sed 's/://')
-${dotnet_path} $@
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    ${dotnet_exe} $@
+else
+    dotnet_path=$(echo "/$dotnet_exe" | sed 's/\\\\/\\//g' | sed 's/://')
+    ${dotnet_path} $@
+fi
 """
 def _csharp_resx_execv_impl(ctx):
     toolchain = ctx.toolchains["@d2l_rules_csharp//csharp/private:toolchain_type"]
