@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
     std::cerr << "Couldn't find the .NET runtime" << std::endl;
     return 404;
   }
-  // auto dotnet = std::string("{DotnetExe}");
+  std::cout << "dotnet: " << dotnet << std::endl;
 
   std::ifstream ifs(csproj.c_str());
   std::string contents = slurp(ifs);
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
   auto result = execv(dotnet.c_str(), const_cast<char**>(argv));
 #endif  // _WIN32
   if (result != 0) {
-    std::cout << "dotnet failed: " << errno << std::endl;
+    std::cout << "dotnet failed: " << result << " errno: " << errno << std::endl;
     return -1;
   }
 
