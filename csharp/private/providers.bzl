@@ -23,80 +23,80 @@ def _make_csharp_provider(tfm):
 
 # Bazel requires that providers be "top level" objects, so this stuff is a bit
 # more boilerplate than it could otherwise be.
-CSharpAssemblyNetStandard = _make_csharp_provider("netstandard")
-CSharpAssemblyNetStandard10 = _make_csharp_provider("netstandard1.0")
-CSharpAssemblyNetStandard11 = _make_csharp_provider("netstandard1.1")
-CSharpAssemblyNetStandard12 = _make_csharp_provider("netstandard1.2")
-CSharpAssemblyNetStandard13 = _make_csharp_provider("netstandard1.3")
-CSharpAssemblyNetStandard14 = _make_csharp_provider("netstandard1.4")
-CSharpAssemblyNetStandard15 = _make_csharp_provider("netstandard1.5")
-CSharpAssemblyNetStandard16 = _make_csharp_provider("netstandard1.6")
-CSharpAssemblyNetStandard20 = _make_csharp_provider("netstandard2.0")
-CSharpAssemblyNetStandard21 = _make_csharp_provider("netstandard2.1")
-CSharpAssemblyNet11 = _make_csharp_provider("net11")
-CSharpAssemblyNet20 = _make_csharp_provider("net20")
-CSharpAssemblyNet30 = _make_csharp_provider("net30")
-CSharpAssemblyNet35 = _make_csharp_provider("net35")
-CSharpAssemblyNet40 = _make_csharp_provider("net40")
-CSharpAssemblyNet403 = _make_csharp_provider("net403")
-CSharpAssemblyNet45 = _make_csharp_provider("net45")
-CSharpAssemblyNet451 = _make_csharp_provider("net451")
-CSharpAssemblyNet452 = _make_csharp_provider("net452")
-CSharpAssemblyNet46 = _make_csharp_provider("net46")
-CSharpAssemblyNet461 = _make_csharp_provider("net461")
-CSharpAssemblyNet462 = _make_csharp_provider("net462")
-CSharpAssemblyNet47 = _make_csharp_provider("net47")
-CSharpAssemblyNet471 = _make_csharp_provider("net471")
-CSharpAssemblyNet472 = _make_csharp_provider("net472")
-CSharpAssemblyNet48 = _make_csharp_provider("net48")
-CSharpAssemblyNetCoreApp10 = _make_csharp_provider("netcoreapp1.0")
-CSharpAssemblyNetCoreApp11 = _make_csharp_provider("netcoreapp1.1")
-CSharpAssemblyNetCoreApp20 = _make_csharp_provider("netcoreapp2.0")
-CSharpAssemblyNetCoreApp21 = _make_csharp_provider("netcoreapp2.1")
-CSharpAssemblyNetCoreApp22 = _make_csharp_provider("netcoreapp2.2")
-CSharpAssemblyNetCoreApp30 = _make_csharp_provider("netcoreapp3.0")
+CSharpAssemblyNetStandardInfo = _make_csharp_provider("netstandard")
+CSharpAssemblyNetStandard10Info = _make_csharp_provider("netstandard1.0")
+CSharpAssemblyNetStandard11Info = _make_csharp_provider("netstandard1.1")
+CSharpAssemblyNetStandard12Info = _make_csharp_provider("netstandard1.2")
+CSharpAssemblyNetStandard13Info = _make_csharp_provider("netstandard1.3")
+CSharpAssemblyNetStandard14Info = _make_csharp_provider("netstandard1.4")
+CSharpAssemblyNetStandard15Info = _make_csharp_provider("netstandard1.5")
+CSharpAssemblyNetStandard16Info = _make_csharp_provider("netstandard1.6")
+CSharpAssemblyNetStandard20Info = _make_csharp_provider("netstandard2.0")
+CSharpAssemblyNetStandard21Info = _make_csharp_provider("netstandard2.1")
+CSharpAssemblyNet11Info = _make_csharp_provider("net11")
+CSharpAssemblyNet20Info = _make_csharp_provider("net20")
+CSharpAssemblyNet30Info = _make_csharp_provider("net30")
+CSharpAssemblyNet35Info = _make_csharp_provider("net35")
+CSharpAssemblyNet40Info = _make_csharp_provider("net40")
+CSharpAssemblyNet403Info = _make_csharp_provider("net403")
+CSharpAssemblyNet45Info = _make_csharp_provider("net45")
+CSharpAssemblyNet451Info = _make_csharp_provider("net451")
+CSharpAssemblyNet452Info = _make_csharp_provider("net452")
+CSharpAssemblyNet46Info = _make_csharp_provider("net46")
+CSharpAssemblyNet461Info = _make_csharp_provider("net461")
+CSharpAssemblyNet462Info = _make_csharp_provider("net462")
+CSharpAssemblyNet47Info = _make_csharp_provider("net47")
+CSharpAssemblyNet471Info = _make_csharp_provider("net471")
+CSharpAssemblyNet472Info = _make_csharp_provider("net472")
+CSharpAssemblyNet48Info = _make_csharp_provider("net48")
+CSharpAssemblyNetCoreApp10Info = _make_csharp_provider("netcoreapp1.0")
+CSharpAssemblyNetCoreApp11Info = _make_csharp_provider("netcoreapp1.1")
+CSharpAssemblyNetCoreApp20Info = _make_csharp_provider("netcoreapp2.0")
+CSharpAssemblyNetCoreApp21Info = _make_csharp_provider("netcoreapp2.1")
+CSharpAssemblyNetCoreApp22Info = _make_csharp_provider("netcoreapp2.2")
+CSharpAssemblyNetCoreApp30Info = _make_csharp_provider("netcoreapp3.0")
 
 # A dict from TFM to provider. The order of keys is not used.
-CSharpAssembly = {
-    "netstandard": CSharpAssemblyNetStandard,
-    "netstandard1.0": CSharpAssemblyNetStandard10,
-    "netstandard1.1": CSharpAssemblyNetStandard11,
-    "netstandard1.2": CSharpAssemblyNetStandard12,
-    "netstandard1.3": CSharpAssemblyNetStandard13,
-    "netstandard1.4": CSharpAssemblyNetStandard14,
-    "netstandard1.5": CSharpAssemblyNetStandard15,
-    "netstandard1.6": CSharpAssemblyNetStandard16,
-    "netstandard2.0": CSharpAssemblyNetStandard20,
-    "netstandard2.1": CSharpAssemblyNetStandard21,
-    "net11": CSharpAssemblyNet11,
-    "net20": CSharpAssemblyNet20,
-    "net30": CSharpAssemblyNet30,
-    "net35": CSharpAssemblyNet35,
-    "net40": CSharpAssemblyNet40,
-    "net403": CSharpAssemblyNet403,
-    "net45": CSharpAssemblyNet45,
-    "net451": CSharpAssemblyNet451,
-    "net452": CSharpAssemblyNet452,
-    "net46": CSharpAssemblyNet46,
-    "net461": CSharpAssemblyNet461,
-    "net462": CSharpAssemblyNet462,
-    "net47": CSharpAssemblyNet47,
-    "net471": CSharpAssemblyNet471,
-    "net472": CSharpAssemblyNet472,
-    "net48": CSharpAssemblyNet48,
-    "netcoreapp1.0": CSharpAssemblyNetCoreApp10,
-    "netcoreapp1.1": CSharpAssemblyNetCoreApp11,
-    "netcoreapp2.0": CSharpAssemblyNetCoreApp20,
-    "netcoreapp2.1": CSharpAssemblyNetCoreApp21,
-    "netcoreapp2.2": CSharpAssemblyNetCoreApp22,
-    "netcoreapp3.0": CSharpAssemblyNetCoreApp30,
+CSharpAssemblyInfo = {
+    "netstandard": CSharpAssemblyNetStandardInfo,
+    "netstandard1.0": CSharpAssemblyNetStandard10Info,
+    "netstandard1.1": CSharpAssemblyNetStandard11Info,
+    "netstandard1.2": CSharpAssemblyNetStandard12Info,
+    "netstandard1.3": CSharpAssemblyNetStandard13Info,
+    "netstandard1.4": CSharpAssemblyNetStandard14Info,
+    "netstandard1.5": CSharpAssemblyNetStandard15Info,
+    "netstandard1.6": CSharpAssemblyNetStandard16Info,
+    "netstandard2.0": CSharpAssemblyNetStandard20Info,
+    "netstandard2.1": CSharpAssemblyNetStandard21Info,
+    "net11": CSharpAssemblyNet11Info,
+    "net20": CSharpAssemblyNet20Info,
+    "net30": CSharpAssemblyNet30Info,
+    "net35": CSharpAssemblyNet35Info,
+    "net40": CSharpAssemblyNet40Info,
+    "net403": CSharpAssemblyNet403Info,
+    "net45": CSharpAssemblyNet45Info,
+    "net451": CSharpAssemblyNet451Info,
+    "net452": CSharpAssemblyNet452Info,
+    "net46": CSharpAssemblyNet46Info,
+    "net461": CSharpAssemblyNet461Info,
+    "net462": CSharpAssemblyNet462Info,
+    "net47": CSharpAssemblyNet47Info,
+    "net471": CSharpAssemblyNet471Info,
+    "net472": CSharpAssemblyNet472Info,
+    "net48": CSharpAssemblyNet48Info,
+    "netcoreapp1.0": CSharpAssemblyNetCoreApp10Info,
+    "netcoreapp1.1": CSharpAssemblyNetCoreApp11Info,
+    "netcoreapp2.0": CSharpAssemblyNetCoreApp20Info,
+    "netcoreapp2.1": CSharpAssemblyNetCoreApp21Info,
+    "netcoreapp2.2": CSharpAssemblyNetCoreApp22Info,
+    "netcoreapp3.0": CSharpAssemblyNetCoreApp30Info,
 }
 
 # A dict of target frameworks to the set of other framworks it can compile
 # against. This relationship is transitive. The order of this dictionary also
 # matters. netstandard should appear first, and keys within a family should
 # proceed from oldest to newest
-FrameworkCompatibility = {
+FRAMEWORK_COMPATIBILITY = {
     # .NET Standard
     "netstandard": [],
     "netstandard1.0": ["netstandard"],
@@ -136,7 +136,7 @@ FrameworkCompatibility = {
     "netcoreapp3.0": ["netcoreapp2.2", "netstandard2.1"],
 }
 
-SubsystemVersion = {
+SUB_SYSTEM_VERSION = {
     "netstandard": None,
     "netstandard1.0": None,
     "netstandard1.1": None,
@@ -171,7 +171,7 @@ SubsystemVersion = {
     "netcoreapp3.0": None,
 }
 
-DefaultLangVersion = {
+DEFAULT_LANG_VERSION = {
     "netstandard": "7.3",
     "netstandard1.0": "7.3",
     "netstandard1.1": "7.3",
@@ -208,4 +208,4 @@ DefaultLangVersion = {
 
 # A convenience used in attributes that need to specify that they accept any
 # kind of C# assembly. This is an array of single-element arrays.
-AnyTargetFramework = [[a] for a in CSharpAssembly.values()]
+AnyTargetFrameworkInfo = [[a] for a in CSharpAssemblyInfo.values()]

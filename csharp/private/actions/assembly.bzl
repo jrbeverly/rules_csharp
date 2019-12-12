@@ -7,16 +7,16 @@ Calls the CSharp compiler, converting the provided elements into compiler option
 """
 
 load(
-    "//csharp/private:common.bzl",
+    "//private:common.bzl",
     "collect_transitive_info",
     "get_analyzer_dll",
     "use_highentropyva",
 )
 load(
-    "//csharp/private:providers.bzl",
-    "CSharpAssembly",
-    "DefaultLangVersion",
-    "SubsystemVersion",
+    "//private:providers.bzl",
+    "CSharpAssemblyInfo",
+    "DEFAULT_LANG_VERSION",
+    "SUB_SYSTEM_VERSION",
 )
 
 def _format_ref_arg(assembly):
@@ -66,10 +66,31 @@ def AssemblyAction(
         target,
         target_framework,
         toolchain):
-    """Calls the CSharp compiler, converting the provided elements into compiler options.
+    """Calls the CSharp compiler on the provider elements.
+
+    Calls the CSharp compiler, converting the provided elements into compiler options.
 
     > dotnet.exe csc.dll /noconfig <other csc args>
     > https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/command-line-building-with-csc-exe
+
+    Args:
+        actions: Bazel methods for declaring output files and the actions that produce them.
+        name: The name of the outputs.
+        additionalfiles: Names additional files that don't directly affect code generation but may be used by analyzers for producing errors or warnings.
+        analyzers: Run the analyzers from this assembly.
+        debug: Emits debugging information.
+        defines: Defines conditional compilation symbols.
+        deps: Assembly files to reference.
+        keyfile: Specifies a strong name key file.
+        langversion: Specify language version: Default, ISO-1, ISO-2, 3, 4, 5, 6, 7, 7.1, 7.2, 7.3, or Latest
+        resources: Embeds the specified resource.
+        srcs: The source files for compilation.
+        out: Specifies the output file name.
+        target: Specifies the format of the output file.
+        target_framework: The target framework moniker
+        toolchain: The DotNET sdk toolchain.
+    Returns:
+        The compiled assembly.
     """
     out_file_name = name if out == "" else out
     out_dir = "bazelout/" + target_framework
@@ -95,14 +116,14 @@ def AssemblyAction(
     else:
         args.add("/highentropyva-")
 
-    ssv = SubsystemVersion[target_framework]
+    ssv = SUB_SYSTEM_VERSION[target_framework]
     if ssv != None:
-        args.add("/subsystemversion:" + ssv)
+        args.add("/SUB_SYSTEM_VERSION:" + ssv)
 
     args.add("/warn:0")  # TODO: this stuff ought to be configurable
 
     args.add("/target:" + target)
-    args.add("/langversion:" + (langversion or DefaultLangVersion[target_framework]))
+    args.add("/langversion:" + (langversion or DEFAULT_LANG_VERSION[target_framework]))
 
     if debug:
         args.add("/debug+")
@@ -194,7 +215,7 @@ def AssemblyAction(
         ],
     )
 
-    return CSharpAssembly[target_framework](
+    return CSharpAssemblyInfo[target_framework](
         out = out_file,
         refout = refout,
         pdb = pdb,

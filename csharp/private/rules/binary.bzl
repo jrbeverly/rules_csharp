@@ -1,9 +1,9 @@
 """Rules for compiling C# binaries."""
 
-load("//csharp/private:providers.bzl", "AnyTargetFramework")
-load("//csharp/private/actions:assembly.bzl", "AssemblyAction")
+load("//private:providers.bzl", "AnyTargetFrameworkInfo")
+load("//private/actions:assembly.bzl", "AssemblyAction")
 load(
-    "//csharp/private:common.bzl",
+    "//private:common.bzl",
     "fill_in_missing_frameworks",
     "is_debug",
     "is_standard_framework",
@@ -64,7 +64,7 @@ csharp_binary = rule(
         ),
         "analyzers": attr.label_list(
             doc = "A list of analyzer references.",
-            providers = AnyTargetFramework,
+            providers = AnyTargetFrameworkInfo,
         ),
         "keyfile": attr.label(
             doc = "The key file used to sign the assembly with a strong name.",
@@ -105,7 +105,7 @@ csharp_binary = rule(
         ),
         "deps": attr.label_list(
             doc = "Other C# libraries, binaries, or imported DLLs",
-            providers = AnyTargetFramework,
+            providers = AnyTargetFrameworkInfo,
         ),
     },
     executable = True,
