@@ -1,7 +1,11 @@
+"""Definitions of DotNET SDK and .NET Frameworks."""
+
 load(":sdk.bzl", "DOTNET_SDK")
 load("//csharp/private/rules:create_net_workspace.bzl", "create_net_workspace")
 load("//csharp/private/macros:nuget.bzl", "nuget_package")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+"""Registers the toolchains exported by this repository."""
 
 def csharp_repositories():
     _net_workspace()

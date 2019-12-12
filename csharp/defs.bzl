@@ -1,3 +1,8 @@
+"""Public API surface is re-exported here.
+
+Users should not load files under "/csharp"
+"""
+
 load(
     "//csharp/private:repositories.bzl",
     _csharp_register_toolchains = "csharp_register_toolchains",

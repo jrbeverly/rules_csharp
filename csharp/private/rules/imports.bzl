@@ -1,3 +1,5 @@
+"""Rules for importing C# libraries."""
+
 load(
     "//csharp/private:common.bzl",
     "collect_transitive_info",

@@ -1,3 +1,5 @@
+"""A wrapper around DotNET for Bazel."""
+
 _TEMPLATE = "//csharp/private:wrappers/dotnet.cc"
 
 def _dotnet_wrapper_impl(ctx):

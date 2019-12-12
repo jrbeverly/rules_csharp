@@ -1,3 +1,5 @@
+"""Rules for compiling C# binaries."""
+
 load("//csharp/private:providers.bzl", "AnyTargetFramework")
 load("//csharp/private/actions:assembly.bzl", "AssemblyAction")
 load(

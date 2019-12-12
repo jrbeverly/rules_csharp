@@ -17,6 +17,8 @@ def is_standard_framework(tfm):
     return tfm.startswith("netstandard")
 
 def collect_transitive_info(deps, tfm):
+    """Determines the transitive dependenices needed for the target framework.
+    """
     direct_refs = []
     transitive_refs = []
     direct_runfiles = []

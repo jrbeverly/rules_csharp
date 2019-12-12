@@ -85,6 +85,7 @@ def nuget_package(
     Args:
       name: A unique name for the package's workspace.
       package: The name of the package in the NuGet feed.
+      version: The version of the package in the NuGet feed.
       nuget_sources: A list of nuget package sources. Defaults to nuget.org.
       sha256: The SHA256 of the package.
       build_file: The path to a BUILD file to use for the package.

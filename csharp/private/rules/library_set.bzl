@@ -1,3 +1,5 @@
+"""Rules for giving a convient name to a collection of libraries."""
+
 load(
     "//csharp/private:common.bzl",
     "collect_transitive_info",

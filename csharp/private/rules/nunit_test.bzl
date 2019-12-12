@@ -1,3 +1,5 @@
+"""Rules for building NUnit tests."""
+
 load("//csharp/private:providers.bzl", "AnyTargetFramework")
 load("//csharp/private/actions:assembly.bzl", "AssemblyAction")
 load(

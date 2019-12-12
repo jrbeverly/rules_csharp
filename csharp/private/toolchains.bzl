@@ -1,3 +1,5 @@
+"""Definitions of the DotNET SDK toolchain."""
+
 load(":sdk.bzl", "DOTNET_SDK_VERSION")
 
 def _csharp_toolchain_impl(ctx):

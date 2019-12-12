@@ -1,3 +1,11 @@
+"""Assembly Action
+
+Calls the CSharp compiler, converting the provided elements into compiler options.
+
+> dotnet.exe csc.dll /noconfig <other csc args>
+> https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/command-line-building-with-csc-exe
+"""
+
 load(
     "//csharp/private:common.bzl",
     "collect_transitive_info",
@@ -58,6 +66,11 @@ def AssemblyAction(
         target,
         target_framework,
         toolchain):
+    """Calls the CSharp compiler, converting the provided elements into compiler options.
+
+    > dotnet.exe csc.dll /noconfig <other csc args>
+    > https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/command-line-building-with-csc-exe
+    """
     out_file_name = name if out == "" else out
     out_dir = "bazelout/" + target_framework
     out_ext = "dll" if target == "library" else "exe"

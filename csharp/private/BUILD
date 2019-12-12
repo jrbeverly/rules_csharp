@@ -17,8 +17,8 @@ exports_files([
 
 toolchain_type(name = "toolchain_type")
 
-configure_toolchain("windows")
+configure_toolchain(os = "windows")
 
-configure_toolchain("linux")
+configure_toolchain(os = "linux")
 
-configure_toolchain("osx")
+configure_toolchain(os = "osx")
