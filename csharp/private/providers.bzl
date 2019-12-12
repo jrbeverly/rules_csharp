@@ -209,3 +209,141 @@ DefaultLangVersion = {
 # A convenience used in attributes that need to specify that they accept any
 # kind of C# assembly. This is an array of single-element arrays.
 AnyTargetFramework = [[a] for a in CSharpAssembly.values()]
+
+## Attribute functions
+
+def _attr_net11(attr):
+    return attr.net11
+
+def _attr_net20(attr):
+    return attr.net20
+
+def _attr_net30(attr):
+    return attr.net30
+
+def _attr_net35(attr):
+    return attr.net35
+
+def _attr_net40(attr):
+    return attr.net40
+
+def _attr_net403(attr):
+    return attr.net403
+
+def _attr_net45(attr):
+    return attr.net45
+
+def _attr_net451(attr):
+    return attr.net451
+
+def _attr_net452(attr):
+    return attr.net452
+
+def _attr_net46(attr):
+    return attr.net46
+
+def _attr_net461(attr):
+    return attr.net461
+
+def _attr_net462(attr):
+    return attr.net462
+
+def _attr_net47(attr):
+    return attr.net47
+
+def _attr_net471(attr):
+    return attr.net471
+
+def _attr_net472(attr):
+    return attr.net472
+
+def _attr_net48(attr):
+    return attr.net48
+
+def _attr_netcoreapp1_0(attr):
+    return attr.netcoreapp1_0
+
+def _attr_netcoreapp1_1(attr):
+    return attr.netcoreapp1_1
+
+def _attr_netcoreapp2_0(attr):
+    return attr.netcoreapp2_0
+
+def _attr_netcoreapp2_1(attr):
+    return attr.netcoreapp2_1
+
+def _attr_netcoreapp2_2(attr):
+    return attr.netcoreapp2_2
+
+def _attr_netcoreapp3_0(attr):
+    return attr.netcoreapp3_0
+
+def _attr_netstandard(attr):
+    return attr.netstandard
+
+def _attr_netstandard1_0(attr):
+    return attr.netstandard1_0
+
+def _attr_netstandard1_1(attr):
+    return attr.netstandard1_1
+
+def _attr_netstandard1_2(attr):
+    return attr.netstandard1_2
+
+def _attr_netstandard1_3(attr):
+    return attr.netstandard1_3
+
+def _attr_netstandard1_4(attr):
+    return attr.netstandard1_4
+
+def _attr_netstandard1_5(attr):
+    return attr.netstandard1_5
+
+def _attr_netstandard1_6(attr):
+    return attr.netstandard1_6
+
+def _attr_netstandard2_0(attr):
+    return attr.netstandard2_0
+
+def _attr_netstandard2_1(attr):
+    return attr.netstandard2_1
+
+_attr_functions = {
+    "net11": _attr_net11,
+    "net20": _attr_net20,
+    "net30": _attr_net30,
+    "net35": _attr_net35,
+    "net40": _attr_net40,
+    "net403": _attr_net403,
+    "net45": _attr_net45,
+    "net451": _attr_net451,
+    "net452": _attr_net452,
+    "net46": _attr_net46,
+    "net461": _attr_net461,
+    "net462": _attr_net462,
+    "net47": _attr_net47,
+    "net471": _attr_net471,
+    "net472": _attr_net472,
+    "net48": _attr_net48,
+    "netcoreapp1.0": _attr_netcoreapp1_0,
+    "netcoreapp1.1": _attr_netcoreapp1_1,
+    "netcoreapp2.0": _attr_netcoreapp2_0,
+    "netcoreapp2.1": _attr_netcoreapp2_1,
+    "netcoreapp2.2": _attr_netcoreapp2_2,
+    "netcoreapp3.0": _attr_netcoreapp3_0,
+    "netstandard": _attr_netstandard,
+    "netstandard1.0": _attr_netstandard1_0,
+    "netstandard1.1": _attr_netstandard1_1,
+    "netstandard1.2": _attr_netstandard1_2,
+    "netstandard1.3": _attr_netstandard1_3,
+    "netstandard1.4": _attr_netstandard1_4,
+    "netstandard1.5": _attr_netstandard1_5,
+    "netstandard1.6": _attr_netstandard1_6,
+    "netstandard2.0": _attr_netstandard2_0,
+    "netstandard2.1": _attr_netstandard2_1,
+}
+
+##
+
+def tfm_from_attr(attr, tfm):
+    return _attr_functions[tfm](attr)
