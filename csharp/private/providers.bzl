@@ -6,6 +6,8 @@ lookup tables for dealing with frameworks.
 See docs/MultiTargetingDesign.md for more info.
 """
 
+##TODO: Generate this entire file
+
 def _make_csharp_provider(tfm):
     return provider(
         doc = "A (usually C#) DLL or exe, targetting %s." % tfm,
