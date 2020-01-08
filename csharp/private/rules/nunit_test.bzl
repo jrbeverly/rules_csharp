@@ -1,6 +1,7 @@
 """
 Rules for compiling NUnit tests.
 """
+
 load("//csharp/private:providers.bzl", "AnyTargetFrameworkInfo")
 load("//csharp/private:actions/assembly.bzl", "AssemblyAction")
 load(

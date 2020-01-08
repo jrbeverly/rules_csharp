@@ -1,6 +1,7 @@
 """
 Rules for interfacing with NuGet packages. 
 """
+
 load("//csharp/private:providers.bzl", "CSharpAssemblyInfo")
 load("//csharp/private:rules/imports.bzl", "import_library", "import_multiframework_library")
 

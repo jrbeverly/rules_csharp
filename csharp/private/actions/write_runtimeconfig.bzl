@@ -6,7 +6,7 @@ load("//csharp/private:sdk.bzl", "RUNTIME_FRAMEWORK_VERSION", "RUNTIME_TFM")
 
 def write_runtimeconfig(actions, template, name, tfm):
     """Create a *.runtimeconfig.json file.
-    
+
     This file is necessary when running a .NET Core binary.
 
     Args:

@@ -1,14 +1,15 @@
 """
 Rules for compiling C# binaries.
 """
+
 load("//csharp/private:providers.bzl", "AnyTargetFrameworkInfo")
 load("//csharp/private:actions/assembly.bzl", "AssemblyAction")
 load(
     "//csharp/private:common.bzl",
     "fill_in_missing_frameworks",
+    "is_core_framework",
     "is_debug",
     "is_standard_framework",
-    "is_core_framework",
 )
 load("//csharp/private:actions/write_runtimeconfig.bzl", "write_runtimeconfig")
 
