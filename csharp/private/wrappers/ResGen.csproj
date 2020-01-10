@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>${BazelResXFramework}</TargetFrameworks>
+        <EnableDefaultEmbeddedResourceItems>False</EnableDefaultEmbeddedResourceItems>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="${BazelResXFile}">
+            <ManifestResourceName>${BazelResXManifestResourceName}</ManifestResourceName>
+        </EmbeddedResource>
+    </ItemGroup>
+</Project>

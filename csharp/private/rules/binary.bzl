@@ -1,7 +1,7 @@
 """
 Rules for compiling C# binaries.
 """
-load("//csharp/private:providers.bzl", "AnyTargetFrameworkInfo")
+load("//csharp/private:providers.bzl", "AnyTargetFrameworkInfo", "CSharpResourceInfo")
 load("//csharp/private:actions/assembly.bzl", "AssemblyAction")
 load(
     "//csharp/private:common.bzl",
@@ -40,7 +40,7 @@ def _binary_impl(ctx):
             deps = ctx.attr.deps + stdrefs,
             keyfile = ctx.file.keyfile,
             langversion = ctx.attr.langversion,
-            resources = ctx.files.resources,
+            resources = ctx.attr.resources,
             srcs = ctx.files.srcs,
             out = ctx.attr.out,
             target = "winexe" if ctx.attr.winexe else "exe",
@@ -95,6 +95,7 @@ csharp_binary = rule(
         "resources": attr.label_list(
             doc = "A list of files to embed in the DLL as resources.",
             allow_files = True,
+            providers = [CSharpResourceInfo],
         ),
         "out": attr.string(
             doc = "File name, without extension, of the built assembly.",

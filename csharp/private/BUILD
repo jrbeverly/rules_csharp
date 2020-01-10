@@ -9,6 +9,8 @@ filegroup(
 exports_files([
     "nunit/shim.cs",
     "wrappers/dotnet.cc",
+    "wrappers/resx.bash",
+    "wrappers/ResGen.csproj",
     "runtimeconfig.json.tpl",
 ])
 

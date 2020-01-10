@@ -8,6 +8,10 @@ def _csharp_toolchain_impl(ctx):
         platform_common.ToolchainInfo(
             runtime = ctx.attr.runtime.files_to_run,
             compiler = ctx.file.compiler,
+            tool = (
+                ctx.workspace_name + "/" + ctx.attr.runtime.files_to_run.executable.short_path,
+                ctx.attr.runtime.default_runfiles,
+            ),
         ),
     ]
 

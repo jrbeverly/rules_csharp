@@ -216,3 +216,6 @@ def GetFrameworkVersionInfo(tfm):
 # A convenience used in attributes that need to specify that they accept any
 # kind of C# assembly. This is an array of single-element arrays.
 AnyTargetFrameworkInfo = [[a] for a in CSharpAssemblyInfo.values()]
+
+# Represents a common language runtime binary resource file (.resources).
+CSharpResourceInfo = provider()

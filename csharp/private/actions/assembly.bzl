@@ -11,6 +11,7 @@ load(
 load(
     "//csharp/private:providers.bzl",
     "CSharpAssemblyInfo",
+    "CSharpResourceInfo",
     "GetFrameworkVersionInfo",
 )
 
@@ -24,7 +25,10 @@ def _format_additionalfile_arg(additionalfile):
     return "/additionalfile:" + additionalfile.path
 
 def _format_resource_arg(resource):
-    return "/resource:" + resource.path
+    identifier = resource[CSharpResourceInfo].identifier
+    result = resource[CSharpResourceInfo].result
+    modifier = resource[CSharpResourceInfo].accessibility_modifier
+    return "/resource:%s,%s,%s" % (result.path, identifier, modifier)
 
 def _format_define(symbol):
     return "/d:" + symbol
@@ -162,6 +166,7 @@ def AssemblyAction(
     args.add_all([cs.path for cs in srcs])
 
     # resources
+    resourcefiles = [res[CSharpResourceInfo].result for res in resources]
     args.add_all(resources, map_each = _format_resource_arg)
 
     # defines
@@ -198,7 +203,7 @@ def AssemblyAction(
     # of 1024 bytes, so always use a param file.
     args.use_param_file("@%s", use_always = True)
 
-    direct_inputs = srcs + resources + analyzer_assemblies + additionalfiles + [toolchain.compiler]
+    direct_inputs = srcs + resourcefiles + analyzer_assemblies + additionalfiles + [toolchain.compiler]
     direct_inputs += [keyfile] if keyfile else []
 
     # dotnet.exe csc.dll /noconfig <other csc args>
