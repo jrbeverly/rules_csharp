@@ -1,24 +1,97 @@
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 
 #ifdef _WIN32
+#include <direct.h>
 #include <errno.h>
 #include <process.h>
 #include <windows.h>
+#define getcwd _getcwd
 #else  // not _WIN32
 #include <stdlib.h>
 #include <unistd.h>
 #endif  // _WIN32
-
 #include "tools/cpp/runfiles/runfiles.h"
 
 using bazel::tools::cpp::runfiles::Runfiles;
+using SubstitutionMap = std::map<std::string, std::string>;
 
 std::string evprintf(std::string name, std::string path) {
   std::stringstream ss;
   ss << name << "=" << path;
   return ss.str();
+}
+
+/**
+ * Returns the full path of the current working directory.
+ *
+ * @return Full path of the current working directory. Empty if cannot be set.
+ */
+std::string PWD() {
+  char buffer[512];
+  char* location = getcwd(buffer, sizeof(buffer));
+  std::string result;
+  if (location) {
+    result = location;
+  }
+
+  return result;
+}
+
+/**
+ * Determines if a command argument is a parameter file.
+ *
+ * @param arg An argument passed to an action.
+ * @return true if the argument is a parameter file; false otherwise.
+ */
+bool IsParameterFile(std::string arg) { return arg[0] == '@'; }
+
+/**
+ * Replaces one or more keyword items in a string using the substitutions
+ * dictionary.
+ *
+ * @param arg An argument passed to an action.
+ * @param subst Substitutions to make when replacing keywords.
+ * @return The string representation of arg with substitutions.
+ */
+std::string Resolve(std::string arg, SubstitutionMap subst) {
+  for (const auto& kv : subst) {
+    size_t pos = arg.find(kv.first);
+    if (pos != std::string::npos)
+      arg.replace(pos, kv.first.length(), kv.second);
+  }
+
+  return arg;
+}
+
+/**
+ * Replaces keyword items in a parameters file using the substitutions
+ * dictionary.
+ *
+ * @param file The path to the parameters file.
+ * @param subst Substitutions to make when replacing keywords.
+ * @return true if the substitutions were made; false otherwise.
+ */
+bool ResolveParamsFile(std::string file, SubstitutionMap subst) {
+  std::string old_file = file + "~";
+
+  std::rename(file.c_str(), old_file.c_str());
+  std::ifstream src(old_file);
+  std::ofstream dest(file);
+  if (!src) {
+    std::cerr << "Could not open " << file << std::endl;
+    return false;
+  }
+
+  std::string argument;
+  while (std::getline(src, argument)) {
+    argument = Resolve(argument, subst);
+    dest << argument << std::endl;
+  }
+  
+  return src && dest;
 }
 
 int main(int argc, char** argv) {
@@ -49,6 +122,29 @@ int main(int argc, char** argv) {
       evprintf("USERPROFILE", dotnetDir),
       evprintf("DOTNET_CLI_TELEMETRY_OPTOUT", "1"),  // disable telemetry
   };
+
+  // variables available for substitution in arguments
+  auto workspaceDir = PWD();
+  std::map<std::string, std::string> substitutions = {
+#ifdef _WIN32
+      {"__BAZEL_WORKSPACE__", "\\"},
+#else   // not _WIN32
+      {"__BAZEL_WORKSPACE__", "/"},
+#endif  // _WIN32
+      {"__BAZEL_SANDBOX__", workspaceDir},
+  };
+
+  // variable substitution of inputs + params file
+  for (int i = 1; i < argc; i++) {
+    std::string argument = argv[i];
+    argument = Resolve(argument, substitutions);
+
+    // If we receive a parameter file, we must resolve all
+    // of the arguments in that file
+    if (IsParameterFile(argument)) {
+      ResolveParamsFile(argument.substr(1), substitutions);
+    }
+  }
 
   // dotnet wants this to either be dotnet or dotnet.exe but doesn't have a
   // preference otherwise.

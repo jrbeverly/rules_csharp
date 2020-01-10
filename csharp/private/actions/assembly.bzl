@@ -132,6 +132,17 @@ def AssemblyAction(
 
     args.add("/debug:portable")
 
+    # The full path of source is embedded into PDBs when compiled
+    # To resolve this, we use pathmap to substitute in new paths
+    # that ensure that these are deterministic
+    #
+    # The dotnet wrapper (dotnetw) provides pathing variables
+    # that can be substituted into any arguments passed in
+    # These are of the form: __BAZEL_{name}_
+
+    # pathmap
+    args.add("/pathmap:%s=%s" % ("__BAZEL_SANDBOX__", "__BAZEL_WORKSPACE__"))
+
     # outputs
     args.add("/out:" + out_file.path)
     args.add("/refout:" + refout.path)
